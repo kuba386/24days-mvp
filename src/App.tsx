@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import daysData from './data/days.json';
 import { DayCard, type Day } from './components/DayCard';
 import { FocusPicker } from './components/FocusPicker';
+import { BlockSummary } from './components/BlockSummary';
 import { EMPTY_DAY, useCloudStorage } from './hooks/useCloudStorage';
 import { FOCUSES } from './focus';
 import { currentStreak, pluralDays, todayKey } from './dates';
@@ -117,6 +118,8 @@ export default function App() {
         </div>
       )}
 
+      {currentDay.review && <BlockSummary days={days} reviewDay={currentDay} getDay={getDay} />}
+
       <DayCard
         key={currentDay.day}
         day={currentDay}
@@ -129,6 +132,7 @@ export default function App() {
           updateDay(currentDay.day, { tasks });
         }}
         onNoteChange={(note) => updateDay(currentDay.day, { note })}
+        onValueChange={(value) => updateDay(currentDay.day, { value })}
         onToggleDone={() =>
           updateDay(currentDay.day, {
             done: !currentState.done,

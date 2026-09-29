@@ -6,6 +6,7 @@ export type DayState = {
   doneAt?: string;
   tasks: boolean[];
   note: string;
+  value?: number;
 };
 
 export type Progress = Record<string, DayState>;

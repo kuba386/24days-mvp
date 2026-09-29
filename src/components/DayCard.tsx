@@ -1,6 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
 import type { DayState } from '../hooks/useCloudStorage';
+import { useDeferredSave } from '../hooks/useDeferredSave';
 import { FOCUSES, type Focus } from '../focus';
+
+export type Metric = {
+  label: string;
+  unit: string;
+  step: number;
+  max: number;
+};
 
 export type Day = {
   day: number;
@@ -9,6 +16,7 @@ export type Day = {
   focus: string;
   tasks: string[];
   actions: Record<Focus, string>;
+  metric?: Metric;
   review: boolean;
 };
 
@@ -19,35 +27,26 @@ type Props = {
   locked: string | null;
   onToggleTask: (index: number) => void;
   onNoteChange: (note: string) => void;
+  onValueChange: (value: number | undefined) => void;
   onToggleDone: () => void;
 };
 
-const NOTE_SAVE_DELAY_MS = 600;
-
-export function DayCard({ day, focus, state, locked, onToggleTask, onNoteChange, onToggleDone }: Props) {
+export function DayCard({
+  day,
+  focus,
+  state,
+  locked,
+  onToggleTask,
+  onNoteChange,
+  onValueChange,
+  onToggleDone,
+}: Props) {
   const actionLabel = FOCUSES.find((f) => f.id === focus)!.actionLabel;
-  const [note, setNote] = useState(state.note);
-  const pendingNote = useRef<string | null>(null);
-  const timer = useRef<number>();
-  const onNoteChangeRef = useRef(onNoteChange);
-  onNoteChangeRef.current = onNoteChange;
-
-  const flushNote = () => {
-    window.clearTimeout(timer.current);
-    if (pendingNote.current !== null) {
-      onNoteChangeRef.current(pendingNote.current);
-      pendingNote.current = null;
-    }
-  };
-
-  const handleNoteChange = (value: string) => {
-    setNote(value);
-    pendingNote.current = value;
-    window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(flushNote, NOTE_SAVE_DELAY_MS);
-  };
-
-  useEffect(() => flushNote, []);
+  const [note, setNote, flushNote] = useDeferredSave(state.note, onNoteChange);
+  const [value, setValue, flushValue] = useDeferredSave(
+    state.value === undefined ? '' : String(state.value),
+    (raw) => onValueChange(raw === '' ? undefined : Number(raw))
+  );
 
   return (
     <div className={`card ${day.review ? 'card--review' : ''} ${locked ? 'card--locked' : ''}`}>
@@ -79,6 +78,28 @@ export function DayCard({ day, focus, state, locked, onToggleTask, onNoteChange,
         })}
       </ul>
 
+      {day.metric && (
+        <label className="metric">
+          <span className="metric__label">Замер дня · {day.metric.label}</span>
+          <span className="metric__row">
+            <input
+              className="metric__input"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              max={day.metric.max}
+              step={day.metric.step}
+              placeholder="0"
+              value={value}
+              disabled={!!locked}
+              onChange={(e) => setValue(e.target.value)}
+              onBlur={flushValue}
+            />
+            <span className="metric__unit">{day.metric.unit}</span>
+          </span>
+        </label>
+      )}
+
       <div className="product-action">
         <span className="product-action__label">{actionLabel}</span>
         {day.actions[focus]}
@@ -88,7 +109,7 @@ export function DayCard({ day, focus, state, locked, onToggleTask, onNoteChange,
           value={note}
           rows={3}
           disabled={!!locked}
-          onChange={(e) => handleNoteChange(e.target.value)}
+          onChange={(e) => setNote(e.target.value)}
           onBlur={flushNote}
         />
       </div>

@@ -271,6 +271,98 @@ body {
   border-color: var(--accent);
 }
 
+.metric {
+  display: block;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.metric__label {
+  display: block;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.metric__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.metric__input {
+  width: 110px;
+  padding: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.metric__input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.metric__unit {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.card--summary {
+  border-color: var(--accent);
+  background: rgba(242, 183, 5, 0.06);
+}
+
+.summary-block {
+  margin-top: 12px;
+}
+
+.summary-block__title {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-row__label {
+  color: var(--text-dim);
+}
+
+.summary-row__value {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.summary-row__value--empty {
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
 .product-action {
   background: rgba(242, 183, 5, 0.08);
   border: 1px dashed var(--accent);

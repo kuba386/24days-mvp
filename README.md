@@ -134,9 +134,10 @@ git push -u origin main
 │   ├── telegram.d.ts         — типы для window.Telegram
 │   ├── focus.ts              — три фокуса (продукт / учёба / здоровье) и их подписи
 │   ├── data/
-│   │   └── days.json         — контент всех 24 дней + actions под каждый фокус
+│   │   └── days.json         — контент всех 24 дней + actions под каждый фокус + metric (замер дня)
 │   ├── components/
 │   │   ├── DayCard.tsx        — карточка одного дня
+│   │   ├── BlockSummary.tsx   — сводка замеров на обзорных днях (6, 12, 18, 24)
 │   │   └── FocusPicker.tsx    — выбор фокуса при первом запуске
 │   └── hooks/
 │       └── useCloudStorage.ts — сохранение/чтение прогресса через Telegram CloudStorage
