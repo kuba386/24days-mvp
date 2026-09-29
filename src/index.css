@@ -88,6 +88,17 @@ body {
   border-color: var(--accent);
 }
 
+.card--congrats {
+  border-color: var(--success);
+  background: rgba(76, 175, 80, 0.08);
+}
+
+.save-error {
+  color: var(--accent);
+  font-size: 12px;
+  margin-top: 8px;
+}
+
 .card__block {
   color: var(--accent);
   font-size: 12px;

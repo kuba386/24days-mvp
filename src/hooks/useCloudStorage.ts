@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * Прогресс пользователя — какие дни отмечены выполненными.
@@ -20,23 +20,16 @@ function getWebApp() {
 export function useCloudStorage() {
   const [progress, setProgress] = useState<Progress>({});
   const [loaded, setLoaded] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  // Telegram-скрипт подставляет объект WebApp даже вне Telegram (и в старых клиентах),
+  // а его CloudStorage может при вызове синхронно кидать WebAppMethodUnsupported —
+  // это флаг "реально работает", а не просто "объект существует".
+  const cloudAvailable = useRef(true);
 
   useEffect(() => {
     const webApp = getWebApp();
 
-    if (webApp?.CloudStorage) {
-      webApp.CloudStorage.getItem(STORAGE_KEY, (err, value) => {
-        if (!err && value) {
-          try {
-            setProgress(JSON.parse(value));
-          } catch {
-            setProgress({});
-          }
-        }
-        setLoaded(true);
-      });
-    } else {
-      // Режим разработки вне Telegram — берём из localStorage
+    const loadFromLocalStorage = () => {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         try {
@@ -46,6 +39,27 @@ export function useCloudStorage() {
         }
       }
       setLoaded(true);
+    };
+
+    if (webApp?.CloudStorage) {
+      try {
+        webApp.CloudStorage.getItem(STORAGE_KEY, (err, value) => {
+          if (!err && value) {
+            try {
+              setProgress(JSON.parse(value));
+            } catch {
+              setProgress({});
+            }
+          }
+          setLoaded(true);
+        });
+      } catch {
+        cloudAvailable.current = false;
+        loadFromLocalStorage();
+      }
+    } else {
+      cloudAvailable.current = false;
+      loadFromLocalStorage();
     }
   }, []);
 
@@ -55,8 +69,15 @@ export function useCloudStorage() {
       const webApp = getWebApp();
       const raw = JSON.stringify(next);
 
-      if (webApp?.CloudStorage) {
-        webApp.CloudStorage.setItem(STORAGE_KEY, raw);
+      if (webApp?.CloudStorage && cloudAvailable.current) {
+        try {
+          webApp.CloudStorage.setItem(STORAGE_KEY, raw, (err, ok) => {
+            setSaveError(!!err || ok === false);
+          });
+        } catch {
+          cloudAvailable.current = false;
+          localStorage.setItem(STORAGE_KEY, raw);
+        }
       } else {
         localStorage.setItem(STORAGE_KEY, raw);
       }
@@ -65,5 +86,5 @@ export function useCloudStorage() {
     });
   }, []);
 
-  return { progress, loaded, markDayDone };
+  return { progress, loaded, markDayDone, saveError };
 }

@@ -6,7 +6,7 @@ import { useCloudStorage } from './hooks/useCloudStorage';
 const days = daysData as Day[];
 
 export default function App() {
-  const { progress, loaded, markDayDone } = useCloudStorage();
+  const { progress, loaded, markDayDone, saveError } = useCloudStorage();
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
 
   // При загрузке приложения открываем первый ещё не выполненный день
@@ -58,7 +58,22 @@ export default function App() {
           <span>{completedCount} из {days.length} дней</span>
           <span>{percent}%</span>
         </div>
+        {saveError && (
+          <div className="save-error">
+            Не удалось сохранить прогресс. Попробуй отметить день ещё раз.
+          </div>
+        )}
       </header>
+
+      {completedCount === days.length && (
+        <div className="card card--congrats">
+          <div className="card__title">🎉 Цикл из 24 дней завершён</div>
+          <div className="card__focus">
+            Ты прошёл весь цикл. Загляни в свои заметки по «Действию для продукта» за каждый день —
+            там твой готовый план следующего шага.
+          </div>
+        </div>
+      )}
 
       <DayCard
         day={currentDay}
