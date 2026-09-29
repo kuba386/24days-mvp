@@ -1,6 +1,7 @@
 import type { DayState } from '../hooks/useCloudStorage';
 import { useDeferredSave } from '../hooks/useDeferredSave';
 import { FOCUSES, type Focus } from '../focus';
+import { blockStyle } from '../blocks';
 
 export type Metric = {
   label: string;
@@ -49,13 +50,20 @@ export function DayCard({
   );
 
   return (
-    <div className={`card ${day.review ? 'card--review' : ''} ${locked ? 'card--locked' : ''}`}>
-      <div className="card__block">
-        День {day.day} · {day.block}
-        {day.review ? ' · Обзор блока' : ''}
+    <div className={`card card--day ${locked ? 'card--locked' : ''}`} style={blockStyle(day.block)}>
+      <div className="card__head">
+        <span className="card__num" aria-label={`День ${day.day}`}>
+          {day.day}
+        </span>
+        <div>
+          <div className="pills">
+            <span className="pill">{day.block}</span>
+            {day.review && <span className="pill pill--plain">обзор блока</span>}
+          </div>
+          <h2 className="card__title">{day.title}</h2>
+        </div>
       </div>
-      <div className="card__title">{day.title}</div>
-      <div className="card__focus">{day.focus}</div>
+      <p className="card__lead">{day.focus}</p>
 
       <ul className="task-list">
         {day.tasks.map((task, i) => {
@@ -80,7 +88,10 @@ export function DayCard({
 
       {day.metric && (
         <label className="metric">
-          <span className="metric__label">Замер дня · {day.metric.label}</span>
+          <span className="metric__label">
+            <span className="metric__title">Замер дня</span>
+            {day.metric.label}
+          </span>
           <span className="metric__row">
             <input
               className="metric__input"
@@ -100,12 +111,12 @@ export function DayCard({
         </label>
       )}
 
-      <div className="product-action">
-        <span className="product-action__label">{actionLabel}</span>
-        {day.actions[focus]}
+      <div className="action">
+        <span className="action__label">{actionLabel}</span>
+        <p className="action__text">{day.actions[focus]}</p>
         <textarea
-          className="product-action__note"
-          placeholder="Запиши сюда, что получилось…"
+          className="note"
+          placeholder="Что получилось? Запиши здесь"
           value={note}
           rows={3}
           disabled={!!locked}
@@ -115,13 +126,13 @@ export function DayCard({
       </div>
 
       {locked ? (
-        <div className="lock-notice">🔒 {locked}</div>
+        <div className="lock-notice">{locked}</div>
       ) : (
         <button
           className={`btn ${state.done ? 'btn--undone' : 'btn--done'}`}
           onClick={onToggleDone}
         >
-          {state.done ? '✓ День выполнен — отменить' : 'Отметить день выполненным'}
+          {state.done ? 'День выполнен. Отменить' : 'Отметить день выполненным'}
         </button>
       )}
     </div>

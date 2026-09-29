@@ -1,5 +1,6 @@
 import type { Day } from './DayCard';
 import type { DayState } from '../hooks/useCloudStorage';
+import { blockStyle } from '../blocks';
 
 type Props = {
   days: Day[];
@@ -17,17 +18,17 @@ export function BlockSummary({ days, reviewDay, getDay }: Props) {
   const filled = measured.filter((d) => getDay(d.day).value !== undefined).length;
 
   return (
-    <div className="card card--summary">
-      <div className="card__block">
-        {isFinal ? 'Твои замеры за весь цикл' : `Твои замеры · ${reviewDay.block}`}
-      </div>
-      <div className="card__focus">
+    <section className="card card--summary" style={blockStyle(reviewDay.block)}>
+      <h2 className="card__title">
+        {isFinal ? 'Твои замеры за весь путь' : `Твои замеры: ${reviewDay.block.toLowerCase()}`}
+      </h2>
+      <p className="card__lead">
         Заполнено {filled} из {measured.length}. Это твои данные, а не советы из книги — смотри,
         что реально сработало.
-      </div>
+      </p>
 
       {blocks.map((block) => (
-        <div key={block} className="summary-block">
+        <div key={block} className="summary-block" style={blockStyle(block)}>
           {isFinal && <div className="summary-block__title">{block}</div>}
           {measured
             .filter((d) => d.block === block)
@@ -35,9 +36,8 @@ export function BlockSummary({ days, reviewDay, getDay }: Props) {
               const value = getDay(d.day).value;
               return (
                 <div key={d.day} className="summary-row">
-                  <span className="summary-row__label">
-                    День {d.day} · {d.metric!.label}
-                  </span>
+                  <span className="summary-row__day">{d.day}</span>
+                  <span className="summary-row__label">{d.metric!.label}</span>
                   <span className={`summary-row__value ${value === undefined ? 'summary-row__value--empty' : ''}`}>
                     {value === undefined ? '—' : `${value} ${d.metric!.unit}`}
                   </span>
@@ -46,6 +46,6 @@ export function BlockSummary({ days, reviewDay, getDay }: Props) {
             })}
         </div>
       ))}
-    </div>
+    </section>
   );
 }

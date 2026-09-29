@@ -3,6 +3,7 @@ import daysData from './data/days.json';
 import { DayCard, type Day } from './components/DayCard';
 import { FocusPicker } from './components/FocusPicker';
 import { BlockSummary } from './components/BlockSummary';
+import { JourneyMap } from './components/JourneyMap';
 import { EMPTY_DAY, useCloudStorage } from './hooks/useCloudStorage';
 import { FOCUSES } from './focus';
 import { currentStreak, pluralDays, todayKey } from './dates';
@@ -36,7 +37,6 @@ export default function App() {
     () => days.filter((d) => getDay(d.day).done).length,
     [progress]
   );
-  const percent = Math.round((completedCount / days.length) * 100);
   const streak = useMemo(
     () => currentStreak(days.flatMap((d) => getDay(d.day).doneAt ?? [])),
     [progress]
@@ -46,19 +46,20 @@ export default function App() {
   const currentState = getDay(currentDay.day);
 
   // Один день за раз: следующий открывается на следующий календарный день после предыдущего
-  const lockReason = (() => {
-    if (currentDayIndex === 0) return null;
-    const prev = days[currentDayIndex - 1];
+  const lockReasonFor = (index: number) => {
+    if (index === 0) return null;
+    const prev = days[index - 1];
     const prevState = getDay(prev.day);
     if (!prevState.done) return `Сначала заверши день ${prev.day}`;
-    if (prevState.doneAt === todayKey()) return 'Откроется завтра — один день за раз';
+    if (prevState.doneAt === todayKey()) return 'Откроется завтра. Один день за раз.';
     return null;
-  })();
+  };
+  const lockReason = lockReasonFor(currentDayIndex);
 
   if (!loaded) {
     return (
       <div className="app">
-        <p style={{ color: 'var(--text-dim)' }}>Загрузка…</p>
+        <p className="hint">Загрузка…</p>
       </div>
     );
   }
@@ -80,26 +81,33 @@ export default function App() {
   return (
     <div className="app">
       <header className="header">
-        <div className="header__eyebrow">24 DAYS</div>
-        <div className="header__title">Твой продуктивный цикл</div>
-        <div className="header__subtitle">
-          День {currentDay.day} из {days.length} · {focusTitle}{' '}
-          <button className="link-btn" onClick={() => setPickingFocus(true)}>
-            изменить
-          </button>
+        <div className="header__top">
+          <h1 className="header__title">24 дня</h1>
+          <span className="header__focus">
+            Фокус: {focusTitle.toLowerCase()}{' '}
+            <button className="link-btn" onClick={() => setPickingFocus(true)}>
+              изменить
+            </button>
+          </span>
         </div>
 
-        <div className="progress-bar">
-          <div className="progress-bar__fill" style={{ width: `${percent}%` }} />
-        </div>
-        <div className="progress-label">
-          <span>{completedCount} из {days.length} дней</span>
-          <span>{percent}%</span>
-        </div>
-        <div className={`streak ${streak > 0 ? 'streak--active' : ''}`}>
-          {streak > 0
-            ? `🔥 Серия: ${pluralDays(streak)} подряд`
-            : 'Серия прервана — отметь сегодняшний день'}
+        <JourneyMap
+          days={days}
+          currentIndex={currentDayIndex}
+          getDay={getDay}
+          isLocked={(i) => lockReasonFor(i) !== null}
+          onSelect={setCurrentDayIndex}
+        />
+
+        <div className="header__stats">
+          <span>
+            {completedCount === 0
+              ? 'Пока ни одного дня'
+              : `${completedCount} из ${days.length} позади`}
+          </span>
+          <span className={streak > 0 ? 'header__streak' : undefined}>
+            {streak > 0 ? `Серия: ${pluralDays(streak)}` : 'Серии пока нет'}
+          </span>
         </div>
         {saveError && (
           <div className="save-error">
@@ -110,11 +118,11 @@ export default function App() {
 
       {completedCount === days.length && (
         <div className="card card--congrats">
-          <div className="card__title">🎉 Цикл из 24 дней завершён</div>
-          <div className="card__focus">
-            Ты прошёл весь цикл. Загляни в свои заметки за каждый день — там твой готовый план
+          <div className="card__title">Цикл из 24 дней завершён</div>
+          <p className="card__lead">
+            Ты прошёл весь путь. Загляни в свои заметки за каждый день — там твой готовый план
             следующего шага.
-          </div>
+          </p>
         </div>
       )}
 
@@ -147,14 +155,14 @@ export default function App() {
           disabled={currentDayIndex === 0}
           onClick={() => setCurrentDayIndex((i) => Math.max(0, i - 1))}
         >
-          ← Предыдущий день
+          Предыдущий день
         </button>
         <button
           className="nav__btn"
           disabled={currentDayIndex === days.length - 1}
           onClick={() => setCurrentDayIndex((i) => Math.min(days.length - 1, i + 1))}
         >
-          Следующий день →
+          Следующий день
         </button>
       </nav>
     </div>
