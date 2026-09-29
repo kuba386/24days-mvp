@@ -1,23 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-/**
- * Прогресс пользователя — какие дни отмечены выполненными.
- * Пример: { "1": true, "2": true, "3": false }
- */
-export type Progress = Record<string, boolean>;
+export type DayState = {
+  done: boolean;
+  tasks: boolean[];
+  note: string;
+};
 
-const STORAGE_KEY = 'progress';
+export type Progress = Record<string, DayState>;
+
+export const EMPTY_DAY: DayState = { done: false, tasks: [], note: '' };
+
+// CloudStorage ограничивает значение 4096 символами, поэтому каждый день хранится отдельным ключом
+const dayKey = (day: number) => `day_${day}`;
 
 function getWebApp() {
   return window.Telegram?.WebApp;
 }
 
-/**
- * Читает и пишет прогресс в Telegram CloudStorage.
- * Если приложение открыто не в Telegram (например, в обычном браузере при разработке),
- * используется localStorage — только для локальной отладки на компьютере.
- */
-export function useCloudStorage() {
+export function useCloudStorage(dayNumbers: number[]) {
   const [progress, setProgress] = useState<Progress>({});
   const [loaded, setLoaded] = useState(false);
   const [saveError, setSaveError] = useState(false);
@@ -28,31 +28,29 @@ export function useCloudStorage() {
 
   useEffect(() => {
     const webApp = getWebApp();
+    const keys = dayNumbers.map(dayKey);
 
-    const loadFromLocalStorage = () => {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
+    const apply = (values: Record<string, string | null | undefined>) => {
+      const next: Progress = {};
+      for (const day of dayNumbers) {
+        const raw = values[dayKey(day)];
+        if (!raw) continue;
         try {
-          setProgress(JSON.parse(raw));
+          next[String(day)] = { ...EMPTY_DAY, ...JSON.parse(raw) };
         } catch {
-          setProgress({});
+          // битую запись просто пропускаем
         }
       }
+      setProgress(next);
       setLoaded(true);
     };
 
+    const loadFromLocalStorage = () =>
+      apply(Object.fromEntries(keys.map((k) => [k, localStorage.getItem(k)])));
+
     if (webApp?.CloudStorage) {
       try {
-        webApp.CloudStorage.getItem(STORAGE_KEY, (err, value) => {
-          if (!err && value) {
-            try {
-              setProgress(JSON.parse(value));
-            } catch {
-              setProgress({});
-            }
-          }
-          setLoaded(true);
-        });
+        webApp.CloudStorage.getItems(keys, (err, values) => apply(err ? {} : values));
       } catch {
         cloudAvailable.current = false;
         loadFromLocalStorage();
@@ -63,28 +61,28 @@ export function useCloudStorage() {
     }
   }, []);
 
-  const markDayDone = useCallback((day: number, done: boolean) => {
-    setProgress((prev) => {
-      const next = { ...prev, [String(day)]: done };
-      const webApp = getWebApp();
-      const raw = JSON.stringify(next);
-
-      if (webApp?.CloudStorage && cloudAvailable.current) {
-        try {
-          webApp.CloudStorage.setItem(STORAGE_KEY, raw, (err, ok) => {
-            setSaveError(!!err || ok === false);
-          });
-        } catch {
-          cloudAvailable.current = false;
-          localStorage.setItem(STORAGE_KEY, raw);
-        }
-      } else {
-        localStorage.setItem(STORAGE_KEY, raw);
+  const persist = (key: string, raw: string) => {
+    const webApp = getWebApp();
+    if (webApp?.CloudStorage && cloudAvailable.current) {
+      try {
+        webApp.CloudStorage.setItem(key, raw, (err, ok) => {
+          setSaveError(!!err || ok === false);
+        });
+        return;
+      } catch {
+        cloudAvailable.current = false;
       }
+    }
+    localStorage.setItem(key, raw);
+  };
 
-      return next;
+  const updateDay = useCallback((day: number, patch: Partial<DayState>) => {
+    setProgress((prev) => {
+      const next = { ...(prev[String(day)] ?? EMPTY_DAY), ...patch };
+      persist(dayKey(day), JSON.stringify(next));
+      return { ...prev, [String(day)]: next };
     });
   }, []);
 
-  return { progress, loaded, markDayDone, saveError };
+  return { progress, loaded, updateDay, saveError };
 }

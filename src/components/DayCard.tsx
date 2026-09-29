@@ -1,3 +1,6 @@
+import { useEffect, useRef, useState } from 'react';
+import type { DayState } from '../hooks/useCloudStorage';
+
 export type Day = {
   day: number;
   block: string;
@@ -10,11 +13,38 @@ export type Day = {
 
 type Props = {
   day: Day;
-  done: boolean;
-  onToggle: () => void;
+  state: DayState;
+  onToggleTask: (index: number) => void;
+  onNoteChange: (note: string) => void;
+  onToggleDone: () => void;
 };
 
-export function DayCard({ day, done, onToggle }: Props) {
+const NOTE_SAVE_DELAY_MS = 600;
+
+export function DayCard({ day, state, onToggleTask, onNoteChange, onToggleDone }: Props) {
+  const [note, setNote] = useState(state.note);
+  const pendingNote = useRef<string | null>(null);
+  const timer = useRef<number>();
+  const onNoteChangeRef = useRef(onNoteChange);
+  onNoteChangeRef.current = onNoteChange;
+
+  const flushNote = () => {
+    window.clearTimeout(timer.current);
+    if (pendingNote.current !== null) {
+      onNoteChangeRef.current(pendingNote.current);
+      pendingNote.current = null;
+    }
+  };
+
+  const handleNoteChange = (value: string) => {
+    setNote(value);
+    pendingNote.current = value;
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(flushNote, NOTE_SAVE_DELAY_MS);
+  };
+
+  useEffect(() => flushNote, []);
+
   return (
     <div className={`card ${day.review ? 'card--review' : ''}`}>
       <div className="card__block">
@@ -25,24 +55,43 @@ export function DayCard({ day, done, onToggle }: Props) {
       <div className="card__focus">{day.focus}</div>
 
       <ul className="task-list">
-        {day.tasks.map((task, i) => (
-          <li className="task-item" key={i}>
-            <span className="task-item__box" />
-            {task}
-          </li>
-        ))}
+        {day.tasks.map((task, i) => {
+          const checked = !!state.tasks[i];
+          return (
+            <li key={i}>
+              <label className={`task-item ${checked ? 'task-item--checked' : ''}`}>
+                <input
+                  type="checkbox"
+                  className="task-item__input"
+                  checked={checked}
+                  onChange={() => onToggleTask(i)}
+                />
+                <span className="task-item__box" />
+                <span>{task}</span>
+              </label>
+            </li>
+          );
+        })}
       </ul>
 
       <div className="product-action">
         <span className="product-action__label">Действие для продукта</span>
         {day.product_action}
+        <textarea
+          className="product-action__note"
+          placeholder="Запиши сюда, что получилось…"
+          value={note}
+          rows={3}
+          onChange={(e) => handleNoteChange(e.target.value)}
+          onBlur={flushNote}
+        />
       </div>
 
       <button
-        className={`btn ${done ? 'btn--undone' : 'btn--done'}`}
-        onClick={onToggle}
+        className={`btn ${state.done ? 'btn--undone' : 'btn--done'}`}
+        onClick={onToggleDone}
       >
-        {done ? '✓ День выполнен — отменить' : 'Отметить день выполненным'}
+        {state.done ? '✓ День выполнен — отменить' : 'Отметить день выполненным'}
       </button>
     </div>
   );

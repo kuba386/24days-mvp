@@ -133,6 +133,15 @@ body {
   align-items: center;
   gap: 10px;
   font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.task-item__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
 
 .task-item__box {
@@ -141,6 +150,51 @@ body {
   border: 2px solid var(--text-dim);
   border-radius: 4px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1400;
+  font-size: 13px;
+  font-weight: 800;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.task-item--checked .task-item__box {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.task-item--checked .task-item__box::after {
+  content: '✓';
+}
+
+.task-item--checked span:last-child {
+  color: var(--text-dim);
+  text-decoration: line-through;
+}
+
+.product-action__note {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  resize: vertical;
+}
+
+.product-action__note::placeholder {
+  color: var(--text-dim);
+}
+
+.product-action__note:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .product-action {

@@ -1,18 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
 import daysData from './data/days.json';
 import { DayCard, type Day } from './components/DayCard';
-import { useCloudStorage } from './hooks/useCloudStorage';
+import { EMPTY_DAY, useCloudStorage } from './hooks/useCloudStorage';
 
 const days = daysData as Day[];
+const dayNumbers = days.map((d) => d.day);
 
 export default function App() {
-  const { progress, loaded, markDayDone, saveError } = useCloudStorage();
+  const { progress, loaded, updateDay, saveError } = useCloudStorage(dayNumbers);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
+  const getDay = (day: number) => progress[String(day)] ?? EMPTY_DAY;
 
   // При загрузке приложения открываем первый ещё не выполненный день
   useEffect(() => {
     if (!loaded) return;
-    const firstUnfinished = days.findIndex((d) => !progress[String(d.day)]);
+    const firstUnfinished = days.findIndex((d) => !getDay(d.day).done);
     setCurrentDayIndex(firstUnfinished === -1 ? days.length - 1 : firstUnfinished);
   }, [loaded]);
 
@@ -26,13 +28,13 @@ export default function App() {
   }, []);
 
   const completedCount = useMemo(
-    () => days.filter((d) => progress[String(d.day)]).length,
+    () => days.filter((d) => getDay(d.day).done).length,
     [progress]
   );
   const percent = Math.round((completedCount / days.length) * 100);
 
   const currentDay = days[currentDayIndex];
-  const isDone = !!progress[String(currentDay.day)];
+  const currentState = getDay(currentDay.day);
 
   if (!loaded) {
     return (
@@ -76,9 +78,16 @@ export default function App() {
       )}
 
       <DayCard
+        key={currentDay.day}
         day={currentDay}
-        done={isDone}
-        onToggle={() => markDayDone(currentDay.day, !isDone)}
+        state={currentState}
+        onToggleTask={(i) => {
+          const tasks = currentDay.tasks.map((_, idx) => !!currentState.tasks[idx]);
+          tasks[i] = !tasks[i];
+          updateDay(currentDay.day, { tasks });
+        }}
+        onNoteChange={(note) => updateDay(currentDay.day, { note })}
+        onToggleDone={() => updateDay(currentDay.day, { done: !currentState.done })}
       />
 
       <nav className="nav">
