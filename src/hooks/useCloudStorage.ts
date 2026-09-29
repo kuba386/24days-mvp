@@ -3,6 +3,7 @@ import { isFocus, type Focus } from '../focus';
 
 export type DayState = {
   done: boolean;
+  doneAt?: string;
   tasks: boolean[];
   note: string;
 };

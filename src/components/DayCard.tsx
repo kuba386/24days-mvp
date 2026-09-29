@@ -16,6 +16,7 @@ type Props = {
   day: Day;
   focus: Focus;
   state: DayState;
+  locked: string | null;
   onToggleTask: (index: number) => void;
   onNoteChange: (note: string) => void;
   onToggleDone: () => void;
@@ -23,7 +24,7 @@ type Props = {
 
 const NOTE_SAVE_DELAY_MS = 600;
 
-export function DayCard({ day, focus, state, onToggleTask, onNoteChange, onToggleDone }: Props) {
+export function DayCard({ day, focus, state, locked, onToggleTask, onNoteChange, onToggleDone }: Props) {
   const actionLabel = FOCUSES.find((f) => f.id === focus)!.actionLabel;
   const [note, setNote] = useState(state.note);
   const pendingNote = useRef<string | null>(null);
@@ -49,7 +50,7 @@ export function DayCard({ day, focus, state, onToggleTask, onNoteChange, onToggl
   useEffect(() => flushNote, []);
 
   return (
-    <div className={`card ${day.review ? 'card--review' : ''}`}>
+    <div className={`card ${day.review ? 'card--review' : ''} ${locked ? 'card--locked' : ''}`}>
       <div className="card__block">
         День {day.day} · {day.block}
         {day.review ? ' · Обзор блока' : ''}
@@ -67,6 +68,7 @@ export function DayCard({ day, focus, state, onToggleTask, onNoteChange, onToggl
                   type="checkbox"
                   className="task-item__input"
                   checked={checked}
+                  disabled={!!locked}
                   onChange={() => onToggleTask(i)}
                 />
                 <span className="task-item__box" />
@@ -85,17 +87,22 @@ export function DayCard({ day, focus, state, onToggleTask, onNoteChange, onToggl
           placeholder="Запиши сюда, что получилось…"
           value={note}
           rows={3}
+          disabled={!!locked}
           onChange={(e) => handleNoteChange(e.target.value)}
           onBlur={flushNote}
         />
       </div>
 
-      <button
-        className={`btn ${state.done ? 'btn--undone' : 'btn--done'}`}
-        onClick={onToggleDone}
-      >
-        {state.done ? '✓ День выполнен — отменить' : 'Отметить день выполненным'}
-      </button>
+      {locked ? (
+        <div className="lock-notice">🔒 {locked}</div>
+      ) : (
+        <button
+          className={`btn ${state.done ? 'btn--undone' : 'btn--done'}`}
+          onClick={onToggleDone}
+        >
+          {state.done ? '✓ День выполнен — отменить' : 'Отметить день выполненным'}
+        </button>
+      )}
     </div>
   );
 }

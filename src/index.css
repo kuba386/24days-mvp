@@ -93,6 +93,35 @@ body {
   background: rgba(76, 175, 80, 0.08);
 }
 
+.streak {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.streak--active {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.card--locked .task-list,
+.card--locked .product-action {
+  opacity: 0.5;
+}
+
+.card--locked .task-item {
+  cursor: default;
+}
+
+.lock-notice {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px dashed var(--border);
+  color: var(--text-dim);
+  font-size: 14px;
+  text-align: center;
+}
+
 .link-btn {
   background: none;
   border: none;

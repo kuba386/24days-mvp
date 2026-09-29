@@ -4,6 +4,7 @@ import { DayCard, type Day } from './components/DayCard';
 import { FocusPicker } from './components/FocusPicker';
 import { EMPTY_DAY, useCloudStorage } from './hooks/useCloudStorage';
 import { FOCUSES } from './focus';
+import { currentStreak, pluralDays, todayKey } from './dates';
 
 const days = daysData as Day[];
 const dayNumbers = days.map((d) => d.day);
@@ -35,9 +36,23 @@ export default function App() {
     [progress]
   );
   const percent = Math.round((completedCount / days.length) * 100);
+  const streak = useMemo(
+    () => currentStreak(days.flatMap((d) => getDay(d.day).doneAt ?? [])),
+    [progress]
+  );
 
   const currentDay = days[currentDayIndex];
   const currentState = getDay(currentDay.day);
+
+  // Один день за раз: следующий открывается на следующий календарный день после предыдущего
+  const lockReason = (() => {
+    if (currentDayIndex === 0) return null;
+    const prev = days[currentDayIndex - 1];
+    const prevState = getDay(prev.day);
+    if (!prevState.done) return `Сначала заверши день ${prev.day}`;
+    if (prevState.doneAt === todayKey()) return 'Откроется завтра — один день за раз';
+    return null;
+  })();
 
   if (!loaded) {
     return (
@@ -80,6 +95,11 @@ export default function App() {
           <span>{completedCount} из {days.length} дней</span>
           <span>{percent}%</span>
         </div>
+        <div className={`streak ${streak > 0 ? 'streak--active' : ''}`}>
+          {streak > 0
+            ? `🔥 Серия: ${pluralDays(streak)} подряд`
+            : 'Серия прервана — отметь сегодняшний день'}
+        </div>
         {saveError && (
           <div className="save-error">
             Не удалось сохранить прогресс. Попробуй отметить день ещё раз.
@@ -102,13 +122,19 @@ export default function App() {
         day={currentDay}
         focus={focus}
         state={currentState}
+        locked={lockReason}
         onToggleTask={(i) => {
           const tasks = currentDay.tasks.map((_, idx) => !!currentState.tasks[idx]);
           tasks[i] = !tasks[i];
           updateDay(currentDay.day, { tasks });
         }}
         onNoteChange={(note) => updateDay(currentDay.day, { note })}
-        onToggleDone={() => updateDay(currentDay.day, { done: !currentState.done })}
+        onToggleDone={() =>
+          updateDay(currentDay.day, {
+            done: !currentState.done,
+            doneAt: currentState.done ? undefined : todayKey(),
+          })
+        }
       />
 
       <nav className="nav">
