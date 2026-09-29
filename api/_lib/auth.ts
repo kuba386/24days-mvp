@@ -1,4 +1,4 @@
-import { validateInitData, type TelegramUser } from './telegram';
+import { validateInitData, type TelegramUser } from './telegram.js';
 
 // Mini App передаёт initData в заголовке: Authorization: tma <initData>
 export function userFromRequest(req: Request): TelegramUser | null {

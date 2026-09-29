@@ -1,7 +1,7 @@
-import days from '../src/data/days.json';
-import { env, appUrl } from './_lib/env';
-import { escapeHtml, openAppKeyboard, sendMessage } from './_lib/telegram';
-import { listRemindable, setReminders, type UserRow } from './_lib/db';
+import days from '../src/data/days.json' with { type: 'json' };
+import { env, appUrl } from './_lib/env.js';
+import { escapeHtml, openAppKeyboard, sendMessage } from './_lib/telegram.js';
+import { listRemindable, setReminders, type UserRow } from './_lib/db.js';
 
 type Day = (typeof days)[number];
 

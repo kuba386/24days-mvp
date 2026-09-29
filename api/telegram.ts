@@ -1,6 +1,6 @@
-import { env, appUrl } from './_lib/env';
-import { openAppKeyboard, sendMessage } from './_lib/telegram';
-import { setReminders, upsertUser } from './_lib/db';
+import { env, appUrl } from './_lib/env.js';
+import { openAppKeyboard, sendMessage } from './_lib/telegram.js';
+import { setReminders, upsertUser } from './_lib/db.js';
 
 const WELCOME = [
   'Привет! Это <b>24 дня</b> — программа по книге «Мой продуктивный год»: ',

@@ -1,5 +1,5 @@
-import { userFromRequest } from './_lib/auth';
-import { deletePost, fetchThread, upsertPost } from './_lib/db';
+import { userFromRequest } from './_lib/auth.js';
+import { deletePost, fetchThread, upsertPost } from './_lib/db.js';
 
 const FOCUSES = ['product', 'study', 'health'];
 const NOTE_MAX = 1000;

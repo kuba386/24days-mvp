@@ -1,5 +1,5 @@
-import { validateInitData } from './_lib/telegram';
-import { upsertUser } from './_lib/db';
+import { validateInitData } from './_lib/telegram.js';
+import { upsertUser } from './_lib/db.js';
 
 const FOCUSES = ['product', 'study', 'health'];
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;

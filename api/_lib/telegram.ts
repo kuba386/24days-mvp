@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { env } from './env';
+import { env } from './env.js';
 
 export type TelegramUser = { id: number; first_name?: string };
 

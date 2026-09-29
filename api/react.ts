@@ -1,5 +1,5 @@
-import { userFromRequest } from './_lib/auth';
-import { toggleReaction } from './_lib/db';
+import { userFromRequest } from './_lib/auth.js';
+import { toggleReaction } from './_lib/db.js';
 
 export async function POST(req: Request) {
   const user = userFromRequest(req);
