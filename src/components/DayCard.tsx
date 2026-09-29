@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { DayState } from '../hooks/useCloudStorage';
+import { FOCUSES, type Focus } from '../focus';
 
 export type Day = {
   day: number;
@@ -7,12 +8,13 @@ export type Day = {
   title: string;
   focus: string;
   tasks: string[];
-  product_action: string;
+  actions: Record<Focus, string>;
   review: boolean;
 };
 
 type Props = {
   day: Day;
+  focus: Focus;
   state: DayState;
   onToggleTask: (index: number) => void;
   onNoteChange: (note: string) => void;
@@ -21,7 +23,8 @@ type Props = {
 
 const NOTE_SAVE_DELAY_MS = 600;
 
-export function DayCard({ day, state, onToggleTask, onNoteChange, onToggleDone }: Props) {
+export function DayCard({ day, focus, state, onToggleTask, onNoteChange, onToggleDone }: Props) {
+  const actionLabel = FOCUSES.find((f) => f.id === focus)!.actionLabel;
   const [note, setNote] = useState(state.note);
   const pendingNote = useRef<string | null>(null);
   const timer = useRef<number>();
@@ -75,8 +78,8 @@ export function DayCard({ day, state, onToggleTask, onNoteChange, onToggleDone }
       </ul>
 
       <div className="product-action">
-        <span className="product-action__label">Действие для продукта</span>
-        {day.product_action}
+        <span className="product-action__label">{actionLabel}</span>
+        {day.actions[focus]}
         <textarea
           className="product-action__note"
           placeholder="Запиши сюда, что получилось…"

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { isFocus, type Focus } from '../focus';
 
 export type DayState = {
   done: boolean;
@@ -12,6 +13,7 @@ export const EMPTY_DAY: DayState = { done: false, tasks: [], note: '' };
 
 // CloudStorage ограничивает значение 4096 символами, поэтому каждый день хранится отдельным ключом
 const dayKey = (day: number) => `day_${day}`;
+const FOCUS_KEY = 'focus';
 
 function getWebApp() {
   return window.Telegram?.WebApp;
@@ -19,6 +21,7 @@ function getWebApp() {
 
 export function useCloudStorage(dayNumbers: number[]) {
   const [progress, setProgress] = useState<Progress>({});
+  const [focus, setFocusState] = useState<Focus | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [saveError, setSaveError] = useState(false);
   // Telegram-скрипт подставляет объект WebApp даже вне Telegram (и в старых клиентах),
@@ -28,9 +31,12 @@ export function useCloudStorage(dayNumbers: number[]) {
 
   useEffect(() => {
     const webApp = getWebApp();
-    const keys = dayNumbers.map(dayKey);
+    const keys = [FOCUS_KEY, ...dayNumbers.map(dayKey)];
 
     const apply = (values: Record<string, string | null | undefined>) => {
+      const storedFocus = values[FOCUS_KEY];
+      setFocusState(isFocus(storedFocus) ? storedFocus : null);
+
       const next: Progress = {};
       for (const day of dayNumbers) {
         const raw = values[dayKey(day)];
@@ -84,5 +90,10 @@ export function useCloudStorage(dayNumbers: number[]) {
     });
   }, []);
 
-  return { progress, loaded, updateDay, saveError };
+  const setFocus = useCallback((next: Focus) => {
+    setFocusState(next);
+    persist(FOCUS_KEY, next);
+  }, []);
+
+  return { progress, focus, loaded, updateDay, setFocus, saveError };
 }

@@ -93,6 +93,51 @@ body {
   background: rgba(76, 175, 80, 0.08);
 }
 
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.focus-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.focus-option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.focus-option--active {
+  border-color: var(--accent);
+}
+
+.focus-option__title {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.focus-option__desc {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
 .save-error {
   color: var(--accent);
   font-size: 12px;

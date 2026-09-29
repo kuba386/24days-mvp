@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import daysData from './data/days.json';
 import { DayCard, type Day } from './components/DayCard';
+import { FocusPicker } from './components/FocusPicker';
 import { EMPTY_DAY, useCloudStorage } from './hooks/useCloudStorage';
+import { FOCUSES } from './focus';
 
 const days = daysData as Day[];
 const dayNumbers = days.map((d) => d.day);
 
 export default function App() {
-  const { progress, loaded, updateDay, saveError } = useCloudStorage(dayNumbers);
+  const { progress, focus, loaded, updateDay, setFocus, saveError } = useCloudStorage(dayNumbers);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
+  const [pickingFocus, setPickingFocus] = useState(false);
   const getDay = (day: number) => progress[String(day)] ?? EMPTY_DAY;
 
   // При загрузке приложения открываем первый ещё не выполненный день
@@ -44,13 +47,30 @@ export default function App() {
     );
   }
 
+  if (!focus || pickingFocus) {
+    return (
+      <FocusPicker
+        current={focus}
+        onPick={(f) => {
+          setFocus(f);
+          setPickingFocus(false);
+        }}
+      />
+    );
+  }
+
+  const focusTitle = FOCUSES.find((f) => f.id === focus)!.title;
+
   return (
     <div className="app">
       <header className="header">
         <div className="header__eyebrow">24 DAYS</div>
         <div className="header__title">Твой продуктивный цикл</div>
         <div className="header__subtitle">
-          День {currentDay.day} из {days.length}
+          День {currentDay.day} из {days.length} · {focusTitle}{' '}
+          <button className="link-btn" onClick={() => setPickingFocus(true)}>
+            изменить
+          </button>
         </div>
 
         <div className="progress-bar">
@@ -71,8 +91,8 @@ export default function App() {
         <div className="card card--congrats">
           <div className="card__title">🎉 Цикл из 24 дней завершён</div>
           <div className="card__focus">
-            Ты прошёл весь цикл. Загляни в свои заметки по «Действию для продукта» за каждый день —
-            там твой готовый план следующего шага.
+            Ты прошёл весь цикл. Загляни в свои заметки за каждый день — там твой готовый план
+            следующего шага.
           </div>
         </div>
       )}
@@ -80,6 +100,7 @@ export default function App() {
       <DayCard
         key={currentDay.day}
         day={currentDay}
+        focus={focus}
         state={currentState}
         onToggleTask={(i) => {
           const tasks = currentDay.tasks.map((_, idx) => !!currentState.tasks[idx]);

@@ -132,10 +132,12 @@ git push -u origin main
 │   ├── App.tsx               — главный экран, логика навигации по дням
 │   ├── index.css             — все стили (тёмная тема, жёлтый акцент)
 │   ├── telegram.d.ts         — типы для window.Telegram
+│   ├── focus.ts              — три фокуса (продукт / учёба / здоровье) и их подписи
 │   ├── data/
-│   │   └── days.json         — контент всех 24 дней + product_action
+│   │   └── days.json         — контент всех 24 дней + actions под каждый фокус
 │   ├── components/
-│   │   └── DayCard.tsx        — карточка одного дня
+│   │   ├── DayCard.tsx        — карточка одного дня
+│   │   └── FocusPicker.tsx    — выбор фокуса при первом запуске
 │   └── hooks/
 │       └── useCloudStorage.ts — сохранение/чтение прогресса через Telegram CloudStorage
 ├── package.json
