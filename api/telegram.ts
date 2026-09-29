@@ -1,0 +1,39 @@
+import { env, appUrl } from './_lib/env';
+import { openAppKeyboard, sendMessage } from './_lib/telegram';
+import { setReminders, upsertUser } from './_lib/db';
+
+const WELCOME = [
+  'Привет! Это <b>24 дня</b> — программа по книге «Мой продуктивный год»: ',
+  'время, энергия, внимание и дисциплина, по одному дню за раз.',
+  '',
+  'Каждое утро я буду напоминать, какой сегодня день и что замерить. ',
+  'Выключить напоминания: /stop, включить снова: /start.',
+].join('\n');
+
+export async function POST(req: Request) {
+  if (req.headers.get('x-telegram-bot-api-secret-token') !== env('TELEGRAM_WEBHOOK_SECRET')) {
+    return new Response('forbidden', { status: 403 });
+  }
+
+  const update = await req.json().catch(() => null);
+  const msg = update?.message;
+  if (!msg?.text || !msg.from || !msg.chat) return Response.json({ ok: true });
+
+  const command = String(msg.text).trim().split(/[\s@]/)[0];
+  const from = msg.from as { id: number; first_name?: string };
+
+  if (command === '/start') {
+    await upsertUser({
+      telegram_id: from.id,
+      chat_id: msg.chat.id,
+      first_name: from.first_name ?? null,
+      reminders_enabled: true,
+    });
+    await sendMessage(msg.chat.id, WELCOME, openAppKeyboard(appUrl()));
+  } else if (command === '/stop') {
+    await setReminders(from.id, false);
+    await sendMessage(msg.chat.id, 'Напоминания выключены. Включить снова: /start');
+  }
+
+  return Response.json({ ok: true });
+}

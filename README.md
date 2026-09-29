@@ -109,6 +109,50 @@ git push -u origin main
 
 ---
 
+## Часть 4. Бэкенд: тред дня и напоминания бота
+
+Serverless-функции лежат в `api/` и деплоятся Vercel вместе с сайтом. Данные — в Supabase
+(таблицы `days24_users`, `days24_posts`, `days24_reactions`, функция `days24_thread`), доступ к ним
+только с сервера через service-role ключ.
+
+### Шаг 1 — Переменные окружения в Vercel
+Vercel → проект → **Settings → Environment Variables** (см. `.env.example`):
+
+| Переменная | Откуда |
+|---|---|
+| `TELEGRAM_BOT_TOKEN` | токен от BotFather |
+| `TELEGRAM_WEBHOOK_SECRET` | любая случайная строка, например `openssl rand -hex 32` |
+| `CRON_SECRET` | ещё одна случайная строка — Vercel сам подставит её в запросы cron |
+| `SUPABASE_URL` | Supabase → Project Settings → API → Project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | там же → `service_role` (секретный, не anon) |
+| `APP_URL` | адрес сайта, `https://24days-mvp.vercel.app` |
+
+После добавления переменных нужен новый деплой (Deployments → Redeploy).
+
+### Шаг 2 — Вебхук бота
+Один раз выполнить в терминале, подставив токен и секрет:
+```
+curl "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://24days-mvp.vercel.app/api/telegram&secret_token=<TELEGRAM_WEBHOOK_SECRET>"
+```
+Команды бота: `/start` — включить напоминания, `/stop` — выключить. В BotFather можно
+зарегистрировать их через `/setcommands`.
+
+### Шаг 3 — Напоминания
+`vercel.json` содержит cron `0 4 * * *` (04:00 UTC = 10:00 по Бишкеку). На Hobby-тарифе cron
+запускается раз в сутки и может сдвигаться в пределах часа. Бот шлёт «День N: …» тем, кто
+включил напоминания и ещё не отметил сегодняшний день.
+
+### Что делают эндпоинты
+- `POST /api/progress` — приложение сообщает текущий день, фокус и дату последней отметки
+- `GET/POST/DELETE /api/thread?day=N` — лента заметок дня; поделиться своей; убрать свою
+- `POST /api/react` — реакция «помогло» (повторно — снять)
+- `POST /api/telegram` — вебхук бота
+- `GET /api/remind` — cron-рассылка (только с `Authorization: Bearer CRON_SECRET`)
+
+Все запросы из приложения подписаны `initData` Telegram (заголовок `Authorization: tma …`),
+подпись проверяется по HMAC с токеном бота. Скрыть неудачный пост: `hidden = true` в
+таблице `days24_posts`.
+
 ## Что дальше (следующие версии)
 
 Этот MVP закрывает только 6 базовых функций: вход через Telegram, дни 1–24, задачи дня, отметка «выполнено», прогресс-бар, сохранение между сессиями. Дальше по порядку:

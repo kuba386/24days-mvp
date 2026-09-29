@@ -4,9 +4,11 @@ import { DayCard, type Day } from './components/DayCard';
 import { FocusPicker } from './components/FocusPicker';
 import { BlockSummary } from './components/BlockSummary';
 import { JourneyMap } from './components/JourneyMap';
+import { DayThread } from './components/DayThread';
 import { EMPTY_DAY, useCloudStorage } from './hooks/useCloudStorage';
 import { FOCUSES } from './focus';
 import { currentStreak, pluralDays, todayKey } from './dates';
+import { syncProgress } from './api';
 
 const days = daysData as Day[];
 const dayNumbers = days.map((d) => d.day);
@@ -23,6 +25,23 @@ export default function App() {
     const firstUnfinished = days.findIndex((d) => !getDay(d.day).done);
     setCurrentDayIndex(firstUnfinished === -1 ? days.length - 1 : firstUnfinished);
   }, [loaded]);
+
+  // Сообщаем боту текущий день и фокус — для утреннего напоминания по делу
+  useEffect(() => {
+    if (!loaded || !focus) return;
+    const firstUnfinished = days.find((d) => !getDay(d.day).done);
+    const doneDates = days.flatMap((d) => getDay(d.day).doneAt ?? []).sort();
+    const timer = window.setTimeout(
+      () =>
+        syncProgress({
+          day: firstUnfinished?.day ?? days.length + 1,
+          focus,
+          lastDoneAt: doneDates[doneDates.length - 1] ?? null,
+        }),
+      800
+    );
+    return () => window.clearTimeout(timer);
+  }, [loaded, focus, progress]);
 
   // Настройка Telegram WebApp: ready() + expand() на весь экран
   useEffect(() => {
@@ -148,6 +167,8 @@ export default function App() {
           })
         }
       />
+
+      {!lockReason && <DayThread day={currentDay} focus={focus} state={currentState} />}
 
       <nav className="nav">
         <button

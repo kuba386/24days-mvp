@@ -550,6 +550,97 @@ p {
   box-shadow: inset 4px 0 0 var(--success);
 }
 
+/* Тред дня */
+
+.thread__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.thread__head .link-btn {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.link-btn:disabled {
+  color: var(--hint);
+  cursor: default;
+}
+
+.thread__hint {
+  margin-top: 8px;
+  color: var(--hint);
+  font-size: 14px;
+}
+
+.posts {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.post {
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.post--mine {
+  box-shadow: inset 3px 0 0 var(--link);
+  padding-left: 12px;
+}
+
+.post__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 13px;
+  color: var(--hint);
+}
+
+.post__author {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.post__value {
+  margin-left: auto;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.post__note {
+  margin-top: 6px;
+  white-space: pre-wrap;
+}
+
+.react {
+  margin-top: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--hint);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.react--on {
+  border-color: var(--link);
+  color: var(--link);
+  font-weight: 600;
+}
+
+.react:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* Выбор фокуса */
 
 .picker__lead {

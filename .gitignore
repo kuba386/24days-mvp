@@ -2,3 +2,8 @@ node_modules
 dist
 *.tsbuildinfo
 .DS_Store
+
+# локальные переменные окружения
+.env
+.env.local
+.vercel
