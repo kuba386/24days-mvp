@@ -126,3 +126,31 @@ export async function toggleReaction(postId: number, telegramId: number): Promis
   await check(del, 'unreact');
   return false;
 }
+
+export type InboxRow = { id: number; text: string; created_at: string };
+
+export async function addInbox(telegramId: number, text: string) {
+  const res = await fetch(rest('days24_inbox'), {
+    method: 'POST',
+    headers: { ...headers(), Prefer: 'return=minimal' },
+    body: JSON.stringify({ telegram_id: telegramId, text }),
+  });
+  await check(res, 'add inbox');
+}
+
+export async function listInbox(telegramId: number): Promise<InboxRow[]> {
+  const res = await fetch(
+    rest(`days24_inbox?telegram_id=eq.${telegramId}&select=id,text,created_at&order=id&limit=200`),
+    { headers: headers() }
+  );
+  await check(res, 'list inbox');
+  return res.json();
+}
+
+export async function deleteInbox(telegramId: number, ids: number[]) {
+  const res = await fetch(
+    rest(`days24_inbox?telegram_id=eq.${telegramId}&id=in.(${ids.join(',')})`),
+    { method: 'DELETE', headers: { ...headers(), Prefer: 'return=minimal' } }
+  );
+  await check(res, 'delete inbox');
+}

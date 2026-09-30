@@ -62,3 +62,10 @@ export const unsharePost = (course: CourseId, day: number) =>
 
 export const toggleReaction = (postId: number) =>
   request<{ reacted: boolean }>('/api/react', { method: 'POST', body: JSON.stringify({ postId }) });
+
+export type BotInboxItem = { id: number; text: string; created_at: string };
+
+export const fetchBotInbox = () => request<BotInboxItem[]>('/api/inbox');
+
+export const ackBotInbox = (ids: number[]) =>
+  request<{ ok: true }>(`/api/inbox?ids=${ids.join(',')}`, { method: 'DELETE' });

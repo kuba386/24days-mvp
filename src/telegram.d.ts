@@ -20,6 +20,8 @@ declare global {
           getItem: (key: string, cb: (err: any, value: string | null) => void) => void;
           setItem: (key: string, value: string, cb?: (err: any, ok: boolean) => void) => void;
           getItems: (keys: string[], cb: (err: any, values: Record<string, string>) => void) => void;
+          getKeys: (cb: (err: any, keys: string[]) => void) => void;
+          removeItem: (key: string, cb?: (err: any, ok: boolean) => void) => void;
         };
         MainButton: {
           text: string;

@@ -3,7 +3,8 @@ import habitsDays from './data/habits.json';
 import gtdDays from './data/gtd.json';
 import type { Day } from './components/DayCard';
 import type { Focus } from './focus';
-import { missesInLast, softChain } from './dates';
+import { missesInLast, softChain, todayKey } from './dates';
+import type { Task } from './hooks/useTasks';
 
 export type CourseId = 'year' | 'habits' | 'gtd';
 
@@ -85,13 +86,47 @@ export const composeHabit = (what: string, amount: string, when: string) => {
   return text.charAt(0).toUpperCase() + text.slice(1);
 };
 
-export type AutoMetric = 'repeats' | 'chain' | 'misses7';
+const HABIT_METRICS = ['repeats', 'chain', 'misses7'] as const;
+const TASK_METRICS = ['captured', 'inbox', 'quick', 'projects', 'waiting', 'someday', 'doneToday', 'open'] as const;
+export type AutoMetric = (typeof HABIT_METRICS)[number] | (typeof TASK_METRICS)[number];
 
-// Замеры, которые считаются из ежедневных отметок привычки, а не вводятся руками
-export function autoMetricValue(kind: AutoMetric, habitLog: string[]) {
-  if (kind === 'repeats') return habitLog.length;
-  if (kind === 'chain') return softChain(habitLog);
-  return missesInLast(habitLog, 7);
+export const isHabitMetric = (kind: AutoMetric) => (HABIT_METRICS as readonly string[]).includes(kind);
+
+// Замеры, которые считаются из отметок привычки или списков дел, а не вводятся руками.
+// undefined — источника нет (например, дела ведутся на бумаге), тогда замер вводится вручную.
+export function autoMetricValue(
+  kind: AutoMetric,
+  source: { habitLog: string[] | null; tasks: Task[] }
+): number | undefined {
+  if (isHabitMetric(kind)) {
+    const log = source.habitLog;
+    if (!log) return undefined;
+    if (kind === 'repeats') return log.length;
+    if (kind === 'chain') return softChain(log);
+    return missesInLast(log, 7);
+  }
+  const { tasks } = source;
+  if (tasks.length === 0) return undefined;
+  const open = tasks.filter((t) => !t.doneAt);
+  const inList = (list: Task['list']) => open.filter((t) => t.list === list).length;
+  switch (kind) {
+    case 'captured':
+      return tasks.length;
+    case 'inbox':
+      return inList('inbox');
+    case 'quick':
+      return tasks.filter((t) => t.quick).length;
+    case 'projects':
+      return inList('project');
+    case 'waiting':
+      return inList('waiting');
+    case 'someday':
+      return inList('someday');
+    case 'doneToday':
+      return tasks.filter((t) => t.doneAt === todayKey() && !t.quick).length;
+    default:
+      return open.length;
+  }
 }
 
 export const fillHabit = (text: string, habit: string | null) =>

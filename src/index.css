@@ -767,6 +767,167 @@ p {
   font-size: 14px;
 }
 
+/* Мои дела (GTD) */
+
+.tasks-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  border: none;
+  cursor: pointer;
+}
+
+.tasks-entry__title {
+  display: block;
+  font-weight: 700;
+}
+
+.tasks-entry__desc {
+  display: block;
+  font-size: 13px;
+  color: var(--hint);
+}
+
+.tasks-entry__go {
+  flex-shrink: 0;
+  color: var(--link);
+  font-weight: 600;
+}
+
+.capture {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.capture__input {
+  margin-top: 0;
+  background: var(--surface);
+}
+
+.capture__btn {
+  flex-shrink: 0;
+  padding: 0 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--button);
+  color: var(--button-text);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.capture__btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: none;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tab--on {
+  background: var(--button);
+  color: var(--button-text);
+  font-weight: 600;
+}
+
+.tab__count {
+  min-width: 18px;
+  font-size: 12px;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
+.tasks__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.task {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.task:last-child {
+  border-bottom: none;
+}
+
+.task:first-child {
+  padding-top: 0;
+}
+
+.task__text {
+  font-weight: 600;
+  white-space: pre-wrap;
+}
+
+.task__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.task--row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.task--row .task-item {
+  flex: 1;
+}
+
+.task__side {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+  font-size: 13px;
+  padding-top: 2px;
+}
+
+.task__remove {
+  color: var(--hint);
+}
+
+.chip.chip--danger {
+  color: #d9534f;
+}
+
+.tasks__done {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--hint);
+}
+
 /* Тред дня */
 
 .thread__head {

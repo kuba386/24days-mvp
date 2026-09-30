@@ -3,7 +3,7 @@ import type { DayState } from '../hooks/useCloudStorage';
 import { useDeferredSave } from '../hooks/useDeferredSave';
 import { FOCUSES, type Focus } from '../focus';
 import { blockStyle } from '../blocks';
-import { fillHabit, type AutoMetric } from '../courses';
+import { fillHabit, isHabitMetric, type AutoMetric } from '../courses';
 
 export type Metric = {
   label: string;
@@ -116,12 +116,16 @@ export function DayCard({
         })}
       </ul>
 
-      {day.metric?.auto && (
+      {day.metric?.auto && autoValue !== undefined && (
         <div className="metric">
           <span className="metric__label">
             <span className="metric__title">Замер дня, считается сам</span>
             {day.metric.label}
-            <span className="metric__hint">По твоим отметкам «Сделал» над карточкой</span>
+            <span className="metric__hint">
+              {isHabitMetric(day.metric.auto)
+                ? 'По твоим отметкам «Сделал» над карточкой'
+                : 'По твоим спискам в «Мои дела»'}
+            </span>
           </span>
           <span className="metric__row">
             <output className="metric__input metric__input--auto">
@@ -132,7 +136,7 @@ export function DayCard({
         </div>
       )}
 
-      {day.metric && !day.metric.auto && (
+      {day.metric && !(day.metric.auto && autoValue !== undefined) && (
         <label className="metric">
           <span className="metric__label">
             <span className="metric__title">Замер дня</span>

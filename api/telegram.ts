@@ -1,6 +1,6 @@
 import { env, appUrl } from './_lib/env.js';
-import { openAppKeyboard, sendMessage } from './_lib/telegram.js';
-import { setReminders, upsertUser } from './_lib/db.js';
+import { escapeHtml, openAppKeyboard, sendMessage } from './_lib/telegram.js';
+import { addInbox, setReminders, upsertUser } from './_lib/db.js';
 
 const WELCOME = [
   'Привет! Это <b>24 дня</b>: курсы по книгам, по одному дню за раз.',
@@ -10,6 +10,7 @@ const WELCOME = [
   '• «Дела в порядке» по книге Дэвида Аллена: система для всех твоих задач',
   '',
   'Каждое утро я буду напоминать, какой сегодня день и что замерить. ',
+  'А любое сообщение без команды я запишу в твои «Входящие» в приложении.',
   'Выключить напоминания: /stop, включить снова: /start.',
 ].join('\n');
 
@@ -36,6 +37,14 @@ export async function POST(req: Request) {
   } else if (command === '/stop') {
     await setReminders(from.id, false);
     await sendMessage(msg.chat.id, 'Напоминания выключены. Включить снова: /start');
+  } else if (!command.startsWith('/')) {
+    const text = String(msg.text).trim().slice(0, 300);
+    await addInbox(from.id, text);
+    await sendMessage(
+      msg.chat.id,
+      `Записал во «Входящие»: ${escapeHtml(text)}\nРазобрать можно в приложении, в «Мои дела».`,
+      openAppKeyboard(appUrl())
+    );
   }
 
   return Response.json({ ok: true });

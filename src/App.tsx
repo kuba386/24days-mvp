@@ -5,6 +5,8 @@ import { CoursePicker } from './components/CoursePicker';
 import { HabitSetup } from './components/HabitSetup';
 import { HabitTracker } from './components/HabitTracker';
 import { CourseFinish } from './components/CourseFinish';
+import { TasksView } from './components/TasksView';
+import { useTasks } from './hooks/useTasks';
 import { BlockSummary } from './components/BlockSummary';
 import { JourneyMap } from './components/JourneyMap';
 import { DayThread } from './components/DayThread';
@@ -30,6 +32,8 @@ export default function App() {
     setHabit,
     saveError,
   } = useCloudStorage();
+  const { tasks, add: addTask, update: updateTask, remove: removeTask } = useTasks();
+  const [showTasks, setShowTasks] = useState(false);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
   const [pickingCourse, setPickingCourse] = useState(false);
   const [pickingFocus, setPickingFocus] = useState(false);
@@ -97,8 +101,10 @@ export default function App() {
   };
   const lockReason = lockReasonFor(currentDayIndex);
 
-  const autoKind = courseHabit ? currentDay.metric?.auto : undefined;
-  const autoValue = autoKind ? autoMetricValue(autoKind, habitLog) : undefined;
+  const autoKind = currentDay.metric?.auto;
+  const autoValue = autoKind
+    ? autoMetricValue(autoKind, { habitLog: courseHabit ? habitLog : null, tasks })
+    : undefined;
 
   // Автозамер пишем в день, пока он открыт: так он попадёт в итоги и замрёт после выполнения
   useEffect(() => {
@@ -153,7 +159,21 @@ export default function App() {
     );
   }
 
+  if (showTasks) {
+    return (
+      <TasksView
+        tasks={tasks}
+        onAdd={(text) => addTask(text)}
+        onUpdate={updateTask}
+        onRemove={removeTask}
+        onClose={() => setShowTasks(false)}
+      />
+    );
+  }
+
   const focusTitle = FOCUSES.find((f) => f.id === focus)!.title;
+  const openTasks = tasks.filter((t) => !t.doneAt);
+  const inboxCount = openTasks.filter((t) => t.list === 'inbox').length;
 
   return (
     <div className="app">
@@ -208,6 +228,20 @@ export default function App() {
           </div>
         )}
       </header>
+
+      {(course.id === 'gtd' || openTasks.length > 0) && (
+        <button type="button" className="card tasks-entry" onClick={() => setShowTasks(true)}>
+          <span>
+            <span className="tasks-entry__title">Мои дела</span>
+            <span className="tasks-entry__desc">
+              {openTasks.length === 0
+                ? 'Входящие, шаги, проекты — вся система в одном месте'
+                : `Во входящих: ${inboxCount}. Всего открыто: ${openTasks.length}`}
+            </span>
+          </span>
+          <span className="tasks-entry__go">Открыть</span>
+        </button>
+      )}
 
       {courseHabit && (
         <HabitTracker habit={courseHabit} log={habitLog} onToggle={toggleHabitDate} />

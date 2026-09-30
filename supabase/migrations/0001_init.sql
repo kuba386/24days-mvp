@@ -71,3 +71,14 @@ as $$
 $$;
 
 revoke execute on function public.days24_thread(text, integer, bigint) from public, anon, authenticated;
+
+-- Очередь «Входящих»: сообщения, отправленные боту. Приложение забирает их в CloudStorage и удаляет отсюда
+create table public.days24_inbox (
+  id bigint generated always as identity primary key,
+  telegram_id bigint not null,
+  text text not null check (char_length(text) between 1 and 300),
+  created_at timestamptz not null default now()
+);
+create index days24_inbox_user_idx on public.days24_inbox (telegram_id, id);
+
+alter table public.days24_inbox enable row level security;
