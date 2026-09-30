@@ -1,5 +1,6 @@
 import { validateInitData } from './_lib/telegram.js';
 import { upsertUser } from './_lib/db.js';
+import { parseCourse, parseHabit } from './_lib/courses.js';
 
 const FOCUSES = ['product', 'study', 'health'];
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -14,6 +15,7 @@ export async function POST(req: Request) {
   const user = validateInitData(body.initData);
   if (!user) return new Response('unauthorized', { status: 401 });
 
+  const course = parseCourse(body.course) ?? 'year';
   const day = Number(body.day);
   const focus = FOCUSES.includes(body.focus) ? (body.focus as string) : null;
   const lastDoneAt = DATE_RE.test(body.lastDoneAt ?? '') ? (body.lastDoneAt as string) : null;
@@ -26,7 +28,9 @@ export async function POST(req: Request) {
     telegram_id: user.id,
     chat_id: user.id,
     first_name: user.first_name ?? null,
+    course,
     focus,
+    habit: parseHabit(body.habit),
     current_day: day,
     last_done_at: lastDoneAt,
     tz_offset_min: tzOffset,

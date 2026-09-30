@@ -2,6 +2,7 @@ import type { DayState } from '../hooks/useCloudStorage';
 import { useDeferredSave } from '../hooks/useDeferredSave';
 import { FOCUSES, type Focus } from '../focus';
 import { blockStyle } from '../blocks';
+import { fillHabit } from '../courses';
 
 export type Metric = {
   label: string;
@@ -16,7 +17,11 @@ export type Day = {
   title: string;
   focus: string;
   tasks: string[];
-  actions: Record<Focus, string>;
+  // «Продуктивный год»: своё действие под каждый фокус
+  actions?: Record<Focus, string>;
+  // «Атомные привычки»: одно действие с {привычка} и пример под фокус
+  action?: string;
+  examples?: Record<Focus, string>;
   metric?: Metric;
   review: boolean;
 };
@@ -24,6 +29,7 @@ export type Day = {
 type Props = {
   day: Day;
   focus: Focus;
+  habit: string | null;
   state: DayState;
   locked: string | null;
   onToggleTask: (index: number) => void;
@@ -35,6 +41,7 @@ type Props = {
 export function DayCard({
   day,
   focus,
+  habit,
   state,
   locked,
   onToggleTask,
@@ -42,7 +49,9 @@ export function DayCard({
   onValueChange,
   onToggleDone,
 }: Props) {
-  const actionLabel = FOCUSES.find((f) => f.id === focus)!.actionLabel;
+  const actionLabel = day.action ? 'Действие дня' : FOCUSES.find((f) => f.id === focus)!.actionLabel;
+  const actionText = fillHabit(day.action ?? day.actions?.[focus] ?? '', habit);
+  const example = day.examples?.[focus];
   const [note, setNote, flushNote] = useDeferredSave(state.note, onNoteChange);
   const [value, setValue, flushValue] = useDeferredSave(
     state.value === undefined ? '' : String(state.value),
@@ -79,7 +88,7 @@ export function DayCard({
                   onChange={() => onToggleTask(i)}
                 />
                 <span className="task-item__box" />
-                <span>{task}</span>
+                <span>{fillHabit(task, habit)}</span>
               </label>
             </li>
           );
@@ -113,7 +122,8 @@ export function DayCard({
 
       <div className="action">
         <span className="action__label">{actionLabel}</span>
-        <p className="action__text">{day.actions[focus]}</p>
+        <p className="action__text">{actionText}</p>
+        {example && <p className="action__example">Пример: {example}</p>}
         <textarea
           className="note"
           placeholder="Что получилось? Запиши здесь"

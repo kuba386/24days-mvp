@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import daysData from './data/days.json';
-import { DayCard, type Day } from './components/DayCard';
+import { DayCard } from './components/DayCard';
 import { FocusPicker } from './components/FocusPicker';
+import { CoursePicker } from './components/CoursePicker';
+import { HabitSetup } from './components/HabitSetup';
 import { BlockSummary } from './components/BlockSummary';
 import { JourneyMap } from './components/JourneyMap';
 import { DayThread } from './components/DayThread';
@@ -9,39 +10,55 @@ import { EMPTY_DAY, useCloudStorage } from './hooks/useCloudStorage';
 import { FOCUSES } from './focus';
 import { currentStreak, pluralDays, todayKey } from './dates';
 import { syncProgress } from './api';
-
-const days = daysData as Day[];
-const dayNumbers = days.map((d) => d.day);
+import { courseById, COURSES } from './courses';
 
 export default function App() {
-  const { progress, focus, loaded, updateDay, setFocus, saveError } = useCloudStorage(dayNumbers);
+  const {
+    progress,
+    course: courseId,
+    focus,
+    habit,
+    loaded,
+    updateDay,
+    setCourse,
+    setFocus,
+    setHabit,
+    saveError,
+  } = useCloudStorage();
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
+  const [pickingCourse, setPickingCourse] = useState(false);
   const [pickingFocus, setPickingFocus] = useState(false);
-  const getDay = (day: number) => progress[String(day)] ?? EMPTY_DAY;
+  const [editingHabit, setEditingHabit] = useState(false);
+  const course = courseById(courseId ?? COURSES[0].id);
+  const days = course.days;
+  const courseHabit = course.needsHabit ? habit || null : null;
+  const getDay = (day: number) => progress[course.id][String(day)] ?? EMPTY_DAY;
 
-  // При загрузке приложения открываем первый ещё не выполненный день
+  // При загрузке и смене курса открываем первый ещё не выполненный день
   useEffect(() => {
     if (!loaded) return;
     const firstUnfinished = days.findIndex((d) => !getDay(d.day).done);
     setCurrentDayIndex(firstUnfinished === -1 ? days.length - 1 : firstUnfinished);
-  }, [loaded]);
+  }, [loaded, course.id]);
 
-  // Сообщаем боту текущий день и фокус — для утреннего напоминания по делу
+  // Сообщаем боту курс, текущий день и фокус — для утреннего напоминания по делу
   useEffect(() => {
-    if (!loaded || !focus) return;
+    if (!loaded || !courseId || !focus) return;
     const firstUnfinished = days.find((d) => !getDay(d.day).done);
     const doneDates = days.flatMap((d) => getDay(d.day).doneAt ?? []).sort();
     const timer = window.setTimeout(
       () =>
         syncProgress({
+          course: course.id,
           day: firstUnfinished?.day ?? days.length + 1,
           focus,
+          habit: courseHabit,
           lastDoneAt: doneDates[doneDates.length - 1] ?? null,
         }),
       800
     );
     return () => window.clearTimeout(timer);
-  }, [loaded, focus, progress]);
+  }, [loaded, courseId, focus, courseHabit, progress]);
 
   // Настройка Telegram WebApp: ready() + expand() на весь экран
   useEffect(() => {
@@ -54,14 +71,14 @@ export default function App() {
 
   const completedCount = useMemo(
     () => days.filter((d) => getDay(d.day).done).length,
-    [progress]
+    [progress, course.id]
   );
   const streak = useMemo(
     () => currentStreak(days.flatMap((d) => getDay(d.day).doneAt ?? [])),
-    [progress]
+    [progress, course.id]
   );
 
-  const currentDay = days[currentDayIndex];
+  const currentDay = days[Math.min(currentDayIndex, days.length - 1)];
   const currentState = getDay(currentDay.day);
 
   // Один день за раз: следующий открывается на следующий календарный день после предыдущего
@@ -83,14 +100,41 @@ export default function App() {
     );
   }
 
+  if (!courseId || pickingCourse) {
+    return (
+      <CoursePicker
+        current={courseId}
+        onPick={(c) => {
+          setCourse(c);
+          setPickingCourse(false);
+        }}
+      />
+    );
+  }
+
   if (!focus || pickingFocus) {
     return (
       <FocusPicker
         current={focus}
+        lead={course.focusLead}
         onPick={(f) => {
           setFocus(f);
           setPickingFocus(false);
         }}
+      />
+    );
+  }
+
+  if (course.needsHabit && (!habit || editingHabit)) {
+    return (
+      <HabitSetup
+        current={habit}
+        focus={focus}
+        onSave={(h) => {
+          setHabit(h);
+          setEditingHabit(false);
+        }}
+        onCancel={habit ? () => setEditingHabit(false) : undefined}
       />
     );
   }
@@ -103,11 +147,27 @@ export default function App() {
         <div className="header__top">
           <h1 className="header__title">24 дня</h1>
           <span className="header__focus">
+            {course.title}{' '}
+            <button className="link-btn" onClick={() => setPickingCourse(true)}>
+              сменить
+            </button>
+          </span>
+        </div>
+        <div className="header__meta">
+          <span>
             Фокус: {focusTitle.toLowerCase()}{' '}
             <button className="link-btn" onClick={() => setPickingFocus(true)}>
               изменить
             </button>
           </span>
+          {courseHabit && (
+            <span>
+              Привычка: {courseHabit}{' '}
+              <button className="link-btn" onClick={() => setEditingHabit(true)}>
+                изменить
+              </button>
+            </span>
+          )}
         </div>
 
         <JourneyMap
@@ -148,27 +208,36 @@ export default function App() {
       {currentDay.review && <BlockSummary days={days} reviewDay={currentDay} getDay={getDay} />}
 
       <DayCard
-        key={currentDay.day}
+        key={`${course.id}-${currentDay.day}`}
         day={currentDay}
         focus={focus}
+        habit={courseHabit}
         state={currentState}
         locked={lockReason}
         onToggleTask={(i) => {
           const tasks = currentDay.tasks.map((_, idx) => !!currentState.tasks[idx]);
           tasks[i] = !tasks[i];
-          updateDay(currentDay.day, { tasks });
+          updateDay(course.id, currentDay.day, { tasks });
         }}
-        onNoteChange={(note) => updateDay(currentDay.day, { note })}
-        onValueChange={(value) => updateDay(currentDay.day, { value })}
+        onNoteChange={(note) => updateDay(course.id, currentDay.day, { note })}
+        onValueChange={(value) => updateDay(course.id, currentDay.day, { value })}
         onToggleDone={() =>
-          updateDay(currentDay.day, {
+          updateDay(course.id, currentDay.day, {
             done: !currentState.done,
             doneAt: currentState.done ? undefined : todayKey(),
           })
         }
       />
 
-      {!lockReason && <DayThread day={currentDay} focus={focus} state={currentState} />}
+      {!lockReason && (
+        <DayThread
+          course={course.id}
+          day={currentDay}
+          focus={focus}
+          habit={courseHabit}
+          state={currentState}
+        />
+      )}
 
       <nav className="nav">
         <button

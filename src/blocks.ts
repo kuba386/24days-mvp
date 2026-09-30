@@ -5,6 +5,10 @@ export const BLOCK_COLORS: Record<string, string> = {
   Энергия: '#E8962E',
   Внимание: '#B0559F',
   Дисциплина: '#2E9E6B',
+  Очевидно: '#3B76F6',
+  Привлекательно: '#E8962E',
+  Просто: '#B0559F',
+  Приятно: '#2E9E6B',
 };
 
 export const blockStyle = (block: string) =>

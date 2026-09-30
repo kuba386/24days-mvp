@@ -2,23 +2,26 @@ import { useEffect, useState } from 'react';
 import type { Day } from './DayCard';
 import type { DayState } from '../hooks/useCloudStorage';
 import { FOCUSES, type Focus } from '../focus';
+import type { CourseId } from '../courses';
 import { fetchThread, initData, sharePost, toggleReaction, unsharePost, type Post } from '../api';
 
 type Props = {
+  course: CourseId;
   day: Day;
   focus: Focus;
+  habit: string | null;
   state: DayState;
 };
 
 const focusTitle = (id: Focus | null) => FOCUSES.find((f) => f.id === id)?.title ?? null;
 
-export function DayThread({ day, focus, state }: Props) {
+export function DayThread({ course, day, focus, habit, state }: Props) {
   const [posts, setPosts] = useState<Post[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const load = () =>
-    fetchThread(day.day)
+    fetchThread(course, day.day)
       .then((p) => {
         setPosts(p);
         setFailed(false);
@@ -29,7 +32,7 @@ export function DayThread({ day, focus, state }: Props) {
     if (!initData()) return;
     setPosts(null);
     load();
-  }, [day.day]);
+  }, [course, day.day]);
 
   if (!initData()) return null;
 
@@ -39,7 +42,14 @@ export function DayThread({ day, focus, state }: Props) {
   const share = async () => {
     setBusy(true);
     try {
-      await sharePost({ day: day.day, note: state.note.trim(), value: state.value, focus });
+      await sharePost({
+        course,
+        day: day.day,
+        note: state.note.trim(),
+        value: state.value,
+        focus,
+        habit: habit || undefined,
+      });
       await load();
     } catch {
       setFailed(true);
@@ -51,7 +61,7 @@ export function DayThread({ day, focus, state }: Props) {
   const unshare = async () => {
     setBusy(true);
     try {
-      await unsharePost(day.day);
+      await unsharePost(course, day.day);
       await load();
     } catch {
       setFailed(true);
@@ -112,6 +122,7 @@ export function DayThread({ day, focus, state }: Props) {
                 </span>
               )}
             </div>
+            {post.habit && <p className="post__habit">Привычка: {post.habit}</p>}
             <p className="post__note">{post.note}</p>
             <button
               type="button"

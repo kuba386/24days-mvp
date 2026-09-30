@@ -1,9 +1,11 @@
 import type { Focus } from './focus';
+import type { CourseId } from './courses';
 
 export type Post = {
   id: number;
   author_name: string | null;
   focus: Focus | null;
+  habit: string | null;
   note: string;
   value: number | null;
   created_at: string;
@@ -26,7 +28,13 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return res.json();
 }
 
-export function syncProgress(payload: { day: number; focus: Focus; lastDoneAt: string | null }) {
+export function syncProgress(payload: {
+  course: CourseId;
+  day: number;
+  focus: Focus;
+  habit: string | null;
+  lastDoneAt: string | null;
+}) {
   const data = initData();
   if (!data) return;
   fetch('/api/progress', {
@@ -37,13 +45,20 @@ export function syncProgress(payload: { day: number; focus: Focus; lastDoneAt: s
   }).catch(() => {});
 }
 
-export const fetchThread = (day: number) => request<Post[]>(`/api/thread?day=${day}`);
+export const fetchThread = (course: CourseId, day: number) =>
+  request<Post[]>(`/api/thread?course=${course}&day=${day}`);
 
-export const sharePost = (post: { day: number; note: string; value?: number; focus: Focus }) =>
-  request<{ ok: true }>('/api/thread', { method: 'POST', body: JSON.stringify(post) });
+export const sharePost = (post: {
+  course: CourseId;
+  day: number;
+  note: string;
+  value?: number;
+  focus: Focus;
+  habit?: string;
+}) => request<{ ok: true }>('/api/thread', { method: 'POST', body: JSON.stringify(post) });
 
-export const unsharePost = (day: number) =>
-  request<{ ok: true }>(`/api/thread?day=${day}`, { method: 'DELETE' });
+export const unsharePost = (course: CourseId, day: number) =>
+  request<{ ok: true }>(`/api/thread?course=${course}&day=${day}`, { method: 'DELETE' });
 
 export const toggleReaction = (postId: number) =>
   request<{ reacted: boolean }>('/api/react', { method: 'POST', body: JSON.stringify({ postId }) });

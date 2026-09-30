@@ -4,7 +4,9 @@ export type UserRow = {
   telegram_id: number;
   chat_id: number;
   first_name?: string | null;
+  course?: string;
   focus?: string | null;
+  habit?: string | null;
   current_day?: number | null;
   last_done_at?: string | null;
   tz_offset_min?: number | null;
@@ -16,6 +18,7 @@ export type PostRow = {
   id: number;
   author_name: string | null;
   focus: string | null;
+  habit: string | null;
   note: string;
   value: number | null;
   created_at: string;
@@ -67,11 +70,11 @@ export async function listRemindable(): Promise<UserRow[]> {
   return res.json();
 }
 
-export async function fetchThread(day: number, viewer: number): Promise<PostRow[]> {
+export async function fetchThread(course: string, day: number, viewer: number): Promise<PostRow[]> {
   const res = await fetch(rest('rpc/days24_thread'), {
     method: 'POST',
     headers: headers(),
-    body: JSON.stringify({ p_day: day, p_viewer: viewer }),
+    body: JSON.stringify({ p_course: course, p_day: day, p_viewer: viewer }),
   });
   await check(res, 'thread');
   return res.json();
@@ -80,12 +83,14 @@ export async function fetchThread(day: number, viewer: number): Promise<PostRow[
 export async function upsertPost(post: {
   telegram_id: number;
   author_name: string | null;
+  course: string;
   day: number;
   focus: string | null;
+  habit: string | null;
   note: string;
   value: number | null;
 }) {
-  const res = await fetch(rest('days24_posts?on_conflict=telegram_id,day'), {
+  const res = await fetch(rest('days24_posts?on_conflict=telegram_id,course,day'), {
     method: 'POST',
     headers: { ...headers(), Prefer: 'resolution=merge-duplicates,return=minimal' },
     body: JSON.stringify({ ...post, hidden: false, created_at: now() }),
@@ -93,11 +98,14 @@ export async function upsertPost(post: {
   await check(res, 'upsert post');
 }
 
-export async function deletePost(telegramId: number, day: number) {
-  const res = await fetch(rest(`days24_posts?telegram_id=eq.${telegramId}&day=eq.${day}`), {
-    method: 'DELETE',
-    headers: { ...headers(), Prefer: 'return=minimal' },
-  });
+export async function deletePost(telegramId: number, course: string, day: number) {
+  const res = await fetch(
+    rest(`days24_posts?telegram_id=eq.${telegramId}&course=eq.${course}&day=eq.${day}`),
+    {
+      method: 'DELETE',
+      headers: { ...headers(), Prefer: 'return=minimal' },
+    }
+  );
   await check(res, 'delete post');
 }
 

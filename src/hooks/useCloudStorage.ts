@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isFocus, type Focus } from '../focus';
+import { COURSES, isCourseId, type CourseId } from '../courses';
 
 export type DayState = {
   done: boolean;
@@ -14,16 +15,24 @@ export type Progress = Record<string, DayState>;
 export const EMPTY_DAY: DayState = { done: false, tasks: [], note: '' };
 
 // CloudStorage ограничивает значение 4096 символами, поэтому каждый день хранится отдельным ключом
-const dayKey = (day: number) => `day_${day}`;
+const dayKey = (course: CourseId, day: number) =>
+  `${COURSES.find((c) => c.id === course)!.keyPrefix}day_${day}`;
+const COURSE_KEY = 'course';
 const FOCUS_KEY = 'focus';
+const HABIT_KEY = 'habit';
+
+const emptyProgress = () =>
+  Object.fromEntries(COURSES.map((c) => [c.id, {}])) as Record<CourseId, Progress>;
 
 function getWebApp() {
   return window.Telegram?.WebApp;
 }
 
-export function useCloudStorage(dayNumbers: number[]) {
-  const [progress, setProgress] = useState<Progress>({});
+export function useCloudStorage() {
+  const [progress, setProgress] = useState<Record<CourseId, Progress>>(emptyProgress);
+  const [course, setCourseState] = useState<CourseId | null>(null);
   const [focus, setFocusState] = useState<Focus | null>(null);
+  const [habit, setHabitState] = useState('');
   const [loaded, setLoaded] = useState(false);
   const [saveError, setSaveError] = useState(false);
   // Telegram-скрипт подставляет объект WebApp даже вне Telegram (и в старых клиентах),
@@ -33,20 +42,27 @@ export function useCloudStorage(dayNumbers: number[]) {
 
   useEffect(() => {
     const webApp = getWebApp();
-    const keys = [FOCUS_KEY, ...dayNumbers.map(dayKey)];
+    const dayKeys = COURSES.flatMap((c) => c.days.map((d) => dayKey(c.id, d.day)));
+    const keys = [COURSE_KEY, FOCUS_KEY, HABIT_KEY, ...dayKeys];
 
     const apply = (values: Record<string, string | null | undefined>) => {
       const storedFocus = values[FOCUS_KEY];
+      const storedCourse = values[COURSE_KEY];
       setFocusState(isFocus(storedFocus) ? storedFocus : null);
+      setHabitState(values[HABIT_KEY] ?? '');
+      // Кто начал до появления курсов, уже проходит «Продуктивный год»
+      setCourseState(isCourseId(storedCourse) ? storedCourse : isFocus(storedFocus) ? 'year' : null);
 
-      const next: Progress = {};
-      for (const day of dayNumbers) {
-        const raw = values[dayKey(day)];
-        if (!raw) continue;
-        try {
-          next[String(day)] = { ...EMPTY_DAY, ...JSON.parse(raw) };
-        } catch {
-          // битую запись просто пропускаем
+      const next = emptyProgress();
+      for (const c of COURSES) {
+        for (const d of c.days) {
+          const raw = values[dayKey(c.id, d.day)];
+          if (!raw) continue;
+          try {
+            next[c.id][String(d.day)] = { ...EMPTY_DAY, ...JSON.parse(raw) };
+          } catch {
+            // битую запись просто пропускаем
+          }
         }
       }
       setProgress(next);
@@ -84,12 +100,17 @@ export function useCloudStorage(dayNumbers: number[]) {
     localStorage.setItem(key, raw);
   };
 
-  const updateDay = useCallback((day: number, patch: Partial<DayState>) => {
+  const updateDay = useCallback((courseId: CourseId, day: number, patch: Partial<DayState>) => {
     setProgress((prev) => {
-      const next = { ...(prev[String(day)] ?? EMPTY_DAY), ...patch };
-      persist(dayKey(day), JSON.stringify(next));
-      return { ...prev, [String(day)]: next };
+      const next = { ...(prev[courseId][String(day)] ?? EMPTY_DAY), ...patch };
+      persist(dayKey(courseId, day), JSON.stringify(next));
+      return { ...prev, [courseId]: { ...prev[courseId], [String(day)]: next } };
     });
+  }, []);
+
+  const setCourse = useCallback((next: CourseId) => {
+    setCourseState(next);
+    persist(COURSE_KEY, next);
   }, []);
 
   const setFocus = useCallback((next: Focus) => {
@@ -97,5 +118,21 @@ export function useCloudStorage(dayNumbers: number[]) {
     persist(FOCUS_KEY, next);
   }, []);
 
-  return { progress, focus, loaded, updateDay, setFocus, saveError };
+  const setHabit = useCallback((next: string) => {
+    setHabitState(next);
+    persist(HABIT_KEY, next);
+  }, []);
+
+  return {
+    progress,
+    course,
+    focus,
+    habit,
+    loaded,
+    updateDay,
+    setCourse,
+    setFocus,
+    setHabit,
+    saveError,
+  };
 }

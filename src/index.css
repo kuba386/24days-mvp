@@ -102,6 +102,15 @@ p {
   text-align: right;
 }
 
+.header__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: -6px 0 12px;
+  font-size: 13px;
+  color: var(--hint);
+}
+
 .link-btn {
   background: none;
   border: none;
@@ -111,19 +120,18 @@ p {
 }
 
 .map {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  align-items: center;
+  gap: 6px 10px;
   padding: 12px;
   background: var(--surface);
   border-radius: 16px;
 }
 
+/* Строки блоков растворяются в общей сетке карты, чтобы колонка подписей была одной ширины */
 .map__row {
-  display: grid;
-  grid-template-columns: 82px 1fr;
-  align-items: center;
-  gap: 8px;
+  display: contents;
 }
 
 .map__block {
@@ -402,6 +410,12 @@ p {
   font-weight: 600;
 }
 
+.action__example {
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--hint);
+}
+
 .note {
   --note-line: var(--line);
   display: block;
@@ -442,6 +456,17 @@ p {
 .btn--done {
   background: var(--button);
   color: var(--button-text);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.btn--plain {
+  margin-top: 8px;
+  background: transparent;
+  color: var(--link);
 }
 
 .btn--undone {
@@ -614,6 +639,12 @@ p {
   font-variant-numeric: tabular-nums;
 }
 
+.post__habit {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .post__note {
   margin-top: 6px;
   white-space: pre-wrap;
@@ -680,6 +711,42 @@ p {
 .focus-option__desc {
   font-size: 14px;
   color: var(--hint);
+}
+
+.focus-option__book {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--link);
+}
+
+/* Ввод привычки */
+
+.habit-form__label {
+  font-size: 12px;
+  color: var(--hint);
+}
+
+.habit-form__input {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--inset);
+  font-size: 16px;
+}
+
+.habit-form__input:focus {
+  outline: none;
+  border-color: var(--link);
+}
+
+.habit-form__example {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+  text-align: left;
 }
 
 @media (prefers-reduced-motion: reduce) {

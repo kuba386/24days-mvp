@@ -177,12 +177,16 @@ curl "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://24days-mvp.verc
 │   ├── index.css             — все стили (тёмная тема, жёлтый акцент)
 │   ├── telegram.d.ts         — типы для window.Telegram
 │   ├── focus.ts              — три фокуса (продукт / учёба / здоровье) и их подписи
+│   ├── courses.ts            — список курсов и подстановка {привычка}
 │   ├── data/
-│   │   └── days.json         — контент всех 24 дней + actions под каждый фокус + metric (замер дня)
+│   │   ├── days.json         — курс «Продуктивный год»: 24 дня, actions под каждый фокус, metric
+│   │   └── habits.json       — курс «Атомные привычки»: action с {привычка} и примеры по фокусу
 │   ├── components/
 │   │   ├── DayCard.tsx        — карточка одного дня
 │   │   ├── BlockSummary.tsx   — сводка замеров на обзорных днях (6, 12, 18, 24)
-│   │   └── FocusPicker.tsx    — выбор фокуса при первом запуске
+│   │   ├── CoursePicker.tsx   — выбор курса
+│   │   ├── FocusPicker.tsx    — выбор фокуса
+│   │   └── HabitSetup.tsx     — ввод своей привычки (курс «Атомные привычки»)
 │   └── hooks/
 │       └── useCloudStorage.ts — сохранение/чтение прогресса через Telegram CloudStorage
 ├── package.json
@@ -190,4 +194,4 @@ curl "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://24days-mvp.verc
 └── tsconfig.json
 ```
 
-Если захочешь поменять текст задач по дням — редактируется только `src/data/days.json`, код трогать не нужно.
+Если захочешь поменять текст задач по дням — редактируется только `src/data/days.json` или `src/data/habits.json`, код трогать не нужно.

@@ -2,18 +2,16 @@ import { FOCUSES, type Focus } from '../focus';
 
 type Props = {
   current: Focus | null;
+  lead: string;
   onPick: (focus: Focus) => void;
 };
 
-export function FocusPicker({ current, onPick }: Props) {
+export function FocusPicker({ current, lead, onPick }: Props) {
   return (
     <div className="app">
       <header className="header">
         <h1 className="header__title">24 дня</h1>
-        <p className="picker__lead">
-          На что направим эти дни? Задачи по времени, энергии и вниманию у всех одинаковые, а
-          ежедневное действие — под твою цель.
-        </p>
+        <p className="picker__lead">{lead}</p>
       </header>
 
       <div className="focus-list">
