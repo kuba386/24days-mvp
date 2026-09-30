@@ -928,6 +928,267 @@ p {
   color: var(--hint);
 }
 
+/* Три главных на сегодня */
+
+.top3__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.top3__title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.top3__score {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--success);
+}
+
+.top3__list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.top3__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.top3__row:last-child {
+  border-bottom: none;
+}
+
+.top3__check {
+  display: flex;
+  cursor: pointer;
+}
+
+.top3__input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 0;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+}
+
+.top3__input:focus {
+  outline: none;
+}
+
+.top3__input--done {
+  color: var(--hint);
+  text-decoration: line-through;
+}
+
+.top3__hint {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--hint);
+}
+
+/* Энергия */
+
+.energy__scale {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.energy__btn {
+  aspect-ratio: 1;
+  min-width: 0;
+  padding: 0;
+  border-radius: 8px;
+  border: 1.5px solid transparent;
+  background: var(--inset);
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.energy__btn--on {
+  border-color: var(--link);
+  color: var(--link);
+}
+
+.energy__chart {
+  display: grid;
+  grid-template-columns: repeat(18, 1fr);
+  align-items: end;
+  gap: 3px;
+  height: 90px;
+  margin-top: 14px;
+}
+
+.energy__col {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
+}
+
+.energy__bar {
+  border-radius: 3px 3px 0 0;
+  background: color-mix(in srgb, var(--link) 35%, transparent);
+  min-height: 2px;
+}
+
+.energy__bar--best {
+  background: var(--success);
+}
+
+.energy__hour {
+  height: 14px;
+  margin-top: 3px;
+  font-size: 10px;
+  text-align: center;
+  color: var(--hint);
+}
+
+.energy__best {
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+/* Карта привычек */
+
+.scorecard {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.scorecard__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.scorecard__totals {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.scorecard__list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+}
+
+.scorecard__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.scorecard__text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.scorecard__marks {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.mark {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1.5px solid var(--line);
+  background: transparent;
+  color: var(--hint);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mark--on.mark--plus {
+  border-color: var(--success);
+  background: var(--success);
+  color: #fff;
+}
+
+.mark--on.mark--minus {
+  border-color: #d9534f;
+  background: #d9534f;
+  color: #fff;
+}
+
+.mark--on.mark--eq {
+  border-color: var(--hint);
+  background: var(--hint);
+  color: #fff;
+}
+
+.mark--remove {
+  border-color: transparent;
+  font-weight: 400;
+}
+
+.scorecard__add {
+  margin: 10px 0 0;
+}
+
+/* Радар блоков */
+
+.radar {
+  margin-top: 8px;
+}
+
+.radar__svg {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.radar__ring {
+  fill: none;
+  stroke: var(--line);
+}
+
+.radar__axis {
+  stroke: var(--line);
+}
+
+.radar__shape {
+  fill: color-mix(in srgb, var(--block) 22%, transparent);
+  stroke: var(--block);
+  stroke-width: 2;
+}
+
+.radar__label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.radar__pct {
+  fill: var(--hint);
+  font-weight: 400;
+}
+
+.radar__note {
+  font-size: 13px;
+  color: var(--hint);
+  text-align: center;
+}
+
 /* Тред дня */
 
 .thread__head {

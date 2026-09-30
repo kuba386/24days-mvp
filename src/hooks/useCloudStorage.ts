@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isFocus, type Focus } from '../focus';
 import { COURSES, isCourseId, type CourseId } from '../courses';
+import type { ScoreItem } from '../components/Scorecard';
 
 export type DayState = {
   done: boolean;
@@ -8,6 +9,8 @@ export type DayState = {
   tasks: boolean[];
   note: string;
   value?: number;
+  // Карта привычек дня 2 «Атомных привычек»
+  items?: ScoreItem[];
 };
 
 export type Progress = Record<string, DayState>;

@@ -7,6 +7,9 @@ import { HabitTracker } from './components/HabitTracker';
 import { CourseFinish } from './components/CourseFinish';
 import { TasksView } from './components/TasksView';
 import { useTasks } from './hooks/useTasks';
+import { useDaily } from './hooks/useDaily';
+import { Top3Card } from './components/Top3Card';
+import { EnergyCard } from './components/EnergyCard';
 import { BlockSummary } from './components/BlockSummary';
 import { JourneyMap } from './components/JourneyMap';
 import { DayThread } from './components/DayThread';
@@ -33,6 +36,7 @@ export default function App() {
     saveError,
   } = useCloudStorage();
   const { tasks, add: addTask, update: updateTask, remove: removeTask } = useTasks();
+  const { top3, top3History, updateTop3, energy, addEnergy } = useDaily();
   const [showTasks, setShowTasks] = useState(false);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
   const [pickingCourse, setPickingCourse] = useState(false);
@@ -103,7 +107,13 @@ export default function App() {
 
   const autoKind = currentDay.metric?.auto;
   const autoValue = autoKind
-    ? autoMetricValue(autoKind, { habitLog: courseHabit ? habitLog : null, tasks })
+    ? autoMetricValue(autoKind, {
+        habitLog: courseHabit ? habitLog : null,
+        tasks,
+        top3,
+        energy,
+        dayItems: currentState.items,
+      })
     : undefined;
 
   // Автозамер пишем в день, пока он открыт: так он попадёт в итоги и замрёт после выполнения
@@ -229,6 +239,13 @@ export default function App() {
         )}
       </header>
 
+      {course.id === 'year' && (
+        <>
+          <Top3Card items={top3} history={top3History} onUpdate={updateTop3} />
+          <EnergyCard entries={energy} onRate={addEnergy} />
+        </>
+      )}
+
       {(course.id === 'gtd' || openTasks.length > 0) && (
         <button type="button" className="card tasks-entry" onClick={() => setShowTasks(true)}>
           <span>
@@ -278,6 +295,7 @@ export default function App() {
         }}
         onNoteChange={(note) => updateDay(course.id, currentDay.day, { note })}
         onValueChange={(value) => updateDay(course.id, currentDay.day, { value })}
+        onItemsChange={(items) => updateDay(course.id, currentDay.day, { items })}
         onToggleDone={() =>
           updateDay(course.id, currentDay.day, {
             done: !currentState.done,

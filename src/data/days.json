@@ -55,7 +55,8 @@
       "label": "Задач из плана сделал",
       "unit": "из 3",
       "step": 1,
-      "max": 3
+      "max": 3,
+      "auto": "top3Done"
     }
   },
   {
@@ -156,7 +157,8 @@
       "label": "Энергия после обеда",
       "unit": "из 10",
       "step": 1,
-      "max": 10
+      "max": 10,
+      "auto": "energyAfternoon"
     }
   },
   {
@@ -219,7 +221,8 @@
       "label": "Энергия без кофеина",
       "unit": "из 10",
       "step": 1,
-      "max": 10
+      "max": 10,
+      "auto": "energyToday"
     }
   },
   {

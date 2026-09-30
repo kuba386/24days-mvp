@@ -1,6 +1,7 @@
 import type { Day } from './DayCard';
 import type { DayState } from '../hooks/useCloudStorage';
 import { blockStyle } from '../blocks';
+import { BlockRadar } from './BlockRadar';
 
 type Props = {
   days: Day[];
@@ -34,6 +35,8 @@ export function BlockSummary({ days, reviewDay, getDay }: Props) {
         {measured.length > 0 && `Замеров заполнено: ${filled} из ${measured.length}. `}
         Это твои данные, а не советы из книги — смотри, что реально сработало.
       </p>
+
+      <BlockRadar days={days} getDay={getDay} reachedBlock={reviewDay.block} />
 
       {blocks.map((block) => (
         <div key={block} className="summary-block" style={blockStyle(block)}>

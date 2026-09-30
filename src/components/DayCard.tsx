@@ -3,7 +3,8 @@ import type { DayState } from '../hooks/useCloudStorage';
 import { useDeferredSave } from '../hooks/useDeferredSave';
 import { FOCUSES, type Focus } from '../focus';
 import { blockStyle } from '../blocks';
-import { fillHabit, isHabitMetric, type AutoMetric } from '../courses';
+import { autoHint, fillHabit, type AutoMetric } from '../courses';
+import { Scorecard, type ScoreItem } from './Scorecard';
 
 export type Metric = {
   label: string;
@@ -26,6 +27,8 @@ export type Day = {
   examples?: Record<Focus, string>;
   // Заготовка заметки для дней, где нужно что-то записать
   template?: string;
+  // Вместо свободного текста — интерактивная карта привычек
+  scorecard?: boolean;
   metric?: Metric;
   review: boolean;
 };
@@ -41,6 +44,7 @@ type Props = {
   onToggleTask: (index: number) => void;
   onNoteChange: (note: string) => void;
   onValueChange: (value: number | undefined) => void;
+  onItemsChange: (items: ScoreItem[]) => void;
   onToggleDone: () => void;
 };
 
@@ -54,6 +58,7 @@ export function DayCard({
   onToggleTask,
   onNoteChange,
   onValueChange,
+  onItemsChange,
   onToggleDone,
 }: Props) {
   const actionLabel = day.action ? 'Действие дня' : FOCUSES.find((f) => f.id === focus)!.actionLabel;
@@ -121,11 +126,7 @@ export function DayCard({
           <span className="metric__label">
             <span className="metric__title">Замер дня, считается сам</span>
             {day.metric.label}
-            <span className="metric__hint">
-              {isHabitMetric(day.metric.auto)
-                ? 'По твоим отметкам «Сделал» над карточкой'
-                : 'По твоим спискам в «Мои дела»'}
-            </span>
+            <span className="metric__hint">{autoHint(day.metric.auto)}</span>
           </span>
           <span className="metric__row">
             <output className="metric__input metric__input--auto">
@@ -159,6 +160,10 @@ export function DayCard({
             <span className="metric__unit">{day.metric.unit}</span>
           </span>
         </label>
+      )}
+
+      {day.scorecard && (
+        <Scorecard items={state.items ?? []} disabled={!!locked} onChange={onItemsChange} />
       )}
 
       <div className="action">

@@ -5,6 +5,8 @@ import type { Day } from './components/DayCard';
 import type { Focus } from './focus';
 import { missesInLast, softChain, todayKey } from './dates';
 import type { Task } from './hooks/useTasks';
+import type { EnergyEntry, Top3Item } from './hooks/useDaily';
+import type { ScoreItem } from './components/Scorecard';
 
 export type CourseId = 'year' | 'habits' | 'gtd';
 
@@ -88,16 +90,61 @@ export const composeHabit = (what: string, amount: string, when: string) => {
 
 const HABIT_METRICS = ['repeats', 'chain', 'misses7'] as const;
 const TASK_METRICS = ['captured', 'inbox', 'quick', 'projects', 'waiting', 'someday', 'doneToday', 'open'] as const;
-export type AutoMetric = (typeof HABIT_METRICS)[number] | (typeof TASK_METRICS)[number];
+const DAILY_METRICS = ['top3Done', 'energyAfternoon', 'energyToday', 'scoreMinus'] as const;
+export type AutoMetric =
+  | (typeof HABIT_METRICS)[number]
+  | (typeof TASK_METRICS)[number]
+  | (typeof DAILY_METRICS)[number];
 
 export const isHabitMetric = (kind: AutoMetric) => (HABIT_METRICS as readonly string[]).includes(kind);
+
+export const AUTO_HINTS: Record<'habit' | 'task' | 'top3' | 'energy' | 'score', string> = {
+  habit: 'По твоим отметкам «Сделал» над карточкой',
+  task: 'По твоим спискам в «Мои дела»',
+  top3: 'По «Трём главным на сегодня» над карточкой',
+  energy: 'По твоим отметкам энергии за сегодня',
+  score: 'По карте дня ниже',
+};
+
+export const autoHint = (kind: AutoMetric) =>
+  isHabitMetric(kind)
+    ? AUTO_HINTS.habit
+    : kind === 'top3Done'
+      ? AUTO_HINTS.top3
+      : kind === 'energyAfternoon' || kind === 'energyToday'
+        ? AUTO_HINTS.energy
+        : kind === 'scoreMinus'
+          ? AUTO_HINTS.score
+          : AUTO_HINTS.task;
+
+const avg1 = (values: number[]) =>
+  values.length ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10 : undefined;
 
 // Замеры, которые считаются из отметок привычки или списков дел, а не вводятся руками.
 // undefined — источника нет (например, дела ведутся на бумаге), тогда замер вводится вручную.
 export function autoMetricValue(
   kind: AutoMetric,
-  source: { habitLog: string[] | null; tasks: Task[] }
+  source: {
+    habitLog: string[] | null;
+    tasks: Task[];
+    top3?: Top3Item[];
+    energy?: EnergyEntry[];
+    dayItems?: ScoreItem[];
+  }
 ): number | undefined {
+  if (kind === 'scoreMinus') {
+    const items = source.dayItems ?? [];
+    return items.length ? items.filter((i) => i.mark === '-').length : undefined;
+  }
+  if (kind === 'top3Done') {
+    const planned = (source.top3 ?? []).filter((i) => i.text.trim());
+    return planned.length ? planned.filter((i) => i.done).length : undefined;
+  }
+  if (kind === 'energyAfternoon' || kind === 'energyToday') {
+    const today = (source.energy ?? []).filter((e) => e.date === todayKey());
+    const picked = kind === 'energyAfternoon' ? today.filter((e) => e.hour >= 13 && e.hour <= 18) : today;
+    return avg1(picked.map((e) => e.value));
+  }
   if (isHabitMetric(kind)) {
     const log = source.habitLog;
     if (!log) return undefined;
