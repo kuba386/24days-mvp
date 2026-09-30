@@ -180,7 +180,8 @@ curl "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://24days-mvp.verc
 │   ├── courses.ts            — список курсов и подстановка {привычка}
 │   ├── data/
 │   │   ├── days.json         — курс «Продуктивный год»: 24 дня, actions под каждый фокус, metric
-│   │   └── habits.json       — курс «Атомные привычки»: action с {привычка} и примеры по фокусу
+│   │   ├── habits.json       — курс «Атомные привычки»: action с {привычка} и примеры по фокусу
+│   │   └── gtd.json          — курс «Дела в порядке» (GTD): action и примеры по фокусу
 │   ├── components/
 │   │   ├── DayCard.tsx        — карточка одного дня
 │   │   ├── BlockSummary.tsx   — сводка замеров на обзорных днях (6, 12, 18, 24)
@@ -194,4 +195,4 @@ curl "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://24days-mvp.verc
 └── tsconfig.json
 ```
 
-Если захочешь поменять текст задач по дням — редактируется только `src/data/days.json` или `src/data/habits.json`, код трогать не нужно.
+Если захочешь поменять текст задач по дням — редактируется только `src/data/days.json`, `src/data/habits.json` или `src/data/gtd.json`, код трогать не нужно.

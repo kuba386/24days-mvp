@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Telegram Mini App «24 DAYS»: 24-дневные курсы по книгам. «Продуктивный год» (Крис Бейли, «Мой продуктивный год») и «Атомные привычки» (Джеймс Клир). UI и тексты на русском.
+Telegram Mini App «24 DAYS»: 24-дневные курсы по книгам. «Продуктивный год» (Крис Бейли, «Мой продуктивный год») «Атомные привычки» (Джеймс Клир) и «Дела в порядке» (Дэвид Аллен, «Как привести дела в порядок»). UI и тексты на русском.
 
 ## Команды
 
@@ -11,7 +11,7 @@ Telegram Mini App «24 DAYS»: 24-дневные курсы по книгам. �
 ## Архитектура
 
 - **Фронтенд**: React 18 + Vite + TypeScript, без UI-библиотек. Стили в `src/index.css`, цвета из Telegram `themeParams` (`--tg-theme-*`) с фолбэками для тёмной и светлой темы.
-- **Курсы**: `src/courses.ts` (`COURSES`), контент в `src/data/days.json` (year) и `src/data/habits.json` (habits). 24 дня, 4 блока по 6, дни 6/12/18/24 обзорные, опциональный `metric`. У year свои `actions` на каждый фокус (`product|study|health`). У habits одно `action` с плейсхолдером `{привычка}` (подставляет `fillHabit`) и `examples` по фокусу. Новый курс: JSON, запись в `COURSES`, цвета блоков в `src/blocks.ts`, id в `api/_lib/courses.ts` и в check-констрейнтах миграции.
+- **Курсы**: `src/courses.ts` (`COURSES`), контент в `src/data/days.json` (year) `src/data/habits.json` (habits) и `src/data/gtd.json` (gtd). 24 дня, 4 блока по 6, дни 6/12/18/24 обзорные, опциональный `metric`. У year свои `actions` на каждый фокус (`product|study|health`). У habits и gtd одно `action` и `examples` по фокусу; у habits в текстах плейсхолдер `{привычка}` (подставляет `fillHabit`). Новый курс: JSON, запись в `COURSES`, цвета блоков в `src/blocks.ts`, id в `api/_lib/courses.ts`, `COURSE_DAYS` в `api/remind.ts` и в check-констрейнтах миграции.
 - **Прогресс**: `src/hooks/useCloudStorage.ts`, Telegram CloudStorage (лимит 4096 символов на значение). Ключи `course`, `focus`, `habit` и `<keyPrefix>day_N`. У year префикс пустой ради совместимости со старым прогрессом; нет `course`, но есть `focus`, значит пользователь на year. Вне Telegram SDK бросает `WebAppMethodUnsupported`, поэтому стоит try/catch с фолбэком на localStorage.
 - **Правила дней** (`src/App.tsx`): открывается один день в календарные сутки. Следующий день доступен, если предыдущий выполнен и `doneAt !== todayKey()`. Даты локальные `YYYY-MM-DD` (`src/dates.ts`).
 - **Бэкенд**: Vercel functions в `api/` (Web `Request`/`Response`, ESM). Относительные импорты обязательно с `.js`, JSON через `with { type: 'json' }`, иначе на Vercel `FUNCTION_INVOCATION_FAILED`.

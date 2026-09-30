@@ -1,4 +1,4 @@
-export const COURSES = ['year', 'habits'] as const;
+export const COURSES = ['year', 'habits', 'gtd'] as const;
 export type CourseId = (typeof COURSES)[number];
 
 export const parseCourse = (raw: unknown): CourseId | null =>

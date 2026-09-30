@@ -1,9 +1,10 @@
 import yearDays from './data/days.json';
 import habitsDays from './data/habits.json';
+import gtdDays from './data/gtd.json';
 import type { Day } from './components/DayCard';
 import type { Focus } from './focus';
 
-export type CourseId = 'year' | 'habits';
+export type CourseId = 'year' | 'habits' | 'gtd';
 
 export type Course = {
   id: CourseId;
@@ -39,6 +40,17 @@ export const COURSES: Course[] = [
     keyPrefix: 'habits_',
     needsHabit: true,
     days: habitsDays as Day[],
+  },
+  {
+    id: 'gtd',
+    title: 'Дела в порядке',
+    book: 'По книге Дэвида Аллена «Как привести дела в порядок»',
+    description: 'Собрать все дела из головы, разобрать, разложить по спискам и держать систему в чистоте',
+    focusLead:
+      'Где у тебя больше всего незакрытых дел? Шаги у всех одинаковые, а примеры будут под твою сферу.',
+    keyPrefix: 'gtd_',
+    needsHabit: false,
+    days: gtdDays as Day[],
   },
 ];
 

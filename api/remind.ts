@@ -1,5 +1,6 @@
 import yearDays from '../src/data/days.json' with { type: 'json' };
 import habitsDays from '../src/data/habits.json' with { type: 'json' };
+import gtdDays from '../src/data/gtd.json' with { type: 'json' };
 import { env, appUrl } from './_lib/env.js';
 import { escapeHtml, openAppKeyboard, sendMessage } from './_lib/telegram.js';
 import { listRemindable, setReminders, type UserRow } from './_lib/db.js';
@@ -15,7 +16,7 @@ type Day = {
   metric?: { label: string };
 };
 
-const COURSE_DAYS: Record<string, Day[]> = { year: yearDays, habits: habitsDays };
+const COURSE_DAYS: Record<string, Day[]> = { year: yearDays, habits: habitsDays, gtd: gtdDays };
 
 const fillHabit = (text: string, habit: string | null | undefined) =>
   text.split('{привычка}').join(habit?.trim() || 'твоя привычка');
