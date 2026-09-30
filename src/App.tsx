@@ -19,6 +19,12 @@ import { currentStreak, pluralDays, todayKey } from './dates';
 import { syncProgress } from './api';
 import { autoMetricValue, courseById, COURSES } from './courses';
 
+// «Я человек, который …» из заметки первого дня «Атомных привычек»
+const identityPhrase = (note?: string) => {
+  const line = note?.split('\n').find((l) => /^я человек, который/i.test(l.trim()))?.trim();
+  return line && !line.includes('…') ? line.replace(/[.!]+$/, '') : null;
+};
+
 export default function App() {
   const {
     progress,
@@ -173,7 +179,7 @@ export default function App() {
     return (
       <TasksView
         tasks={tasks}
-        onAdd={(text) => addTask(text)}
+        onAdd={addTask}
         onUpdate={updateTask}
         onRemove={removeTask}
         onClose={() => setShowTasks(false)}
@@ -261,7 +267,12 @@ export default function App() {
       )}
 
       {courseHabit && (
-        <HabitTracker habit={courseHabit} log={habitLog} onToggle={toggleHabitDate} />
+        <HabitTracker
+          habit={courseHabit}
+          identity={identityPhrase(progress.habits['1']?.note)}
+          log={habitLog}
+          onToggle={toggleHabitDate}
+        />
       )}
 
       {completedCount === days.length && (
@@ -296,6 +307,7 @@ export default function App() {
         onNoteChange={(note) => updateDay(course.id, currentDay.day, { note })}
         onValueChange={(value) => updateDay(course.id, currentDay.day, { value })}
         onItemsChange={(items) => updateDay(course.id, currentDay.day, { items })}
+        onPicksChange={(picks) => updateDay(course.id, currentDay.day, { picks })}
         onToggleDone={() =>
           updateDay(course.id, currentDay.day, {
             done: !currentState.done,

@@ -2,6 +2,8 @@ import { lastDateKeys, pluralDays, shiftDateKey, softChain, todayKey } from '../
 
 type Props = {
   habit: string;
+  // Фраза личности из заметки дня 1: каждое выполнение — голос за неё
+  identity: string | null;
   log: string[];
   onToggle: (date: string) => void;
 };
@@ -13,7 +15,7 @@ const weekday = (key: string) => {
   return WEEKDAYS[new Date(y, m - 1, d).getDay()];
 };
 
-export function HabitTracker({ habit, log, onToggle }: Props) {
+export function HabitTracker({ habit, identity, log, onToggle }: Props) {
   const today = todayKey();
   const yesterday = shiftDateKey(today, -1);
   const done = new Set(log);
@@ -57,8 +59,11 @@ export function HabitTracker({ habit, log, onToggle }: Props) {
 
       <div className="tracker__stats">
         <span>{chain > 0 ? `Цепочка: ${pluralDays(chain)}` : 'Цепочки пока нет'}</span>
-        <span>Всего: {pluralDays(log.length)}</span>
+        <span>Голосов: {log.length}</span>
       </div>
+      <p className="tracker__votes">
+        Каждое выполнение — голос за {identity ? `«${identity}»` : 'того, кем ты становишься'}.
+      </p>
       {missedYesterday && (
         <p className="tracker__warn">
           Вчера был пропуск. Один не страшен, главное — не пропустить второй раз подряд.

@@ -89,7 +89,7 @@ export const composeHabit = (what: string, amount: string, when: string) => {
 };
 
 const HABIT_METRICS = ['repeats', 'chain', 'misses7'] as const;
-const TASK_METRICS = ['captured', 'inbox', 'quick', 'projects', 'waiting', 'someday', 'doneToday', 'open'] as const;
+const TASK_METRICS = ['captured', 'inbox', 'quick', 'projects', 'projectsNoStep', 'waiting', 'someday', 'doneToday', 'open'] as const;
 const DAILY_METRICS = ['top3Done', 'energyAfternoon', 'energyToday', 'scoreMinus'] as const;
 export type AutoMetric =
   | (typeof HABIT_METRICS)[number]
@@ -165,6 +165,10 @@ export function autoMetricValue(
       return tasks.filter((t) => t.quick).length;
     case 'projects':
       return inList('project');
+    case 'projectsNoStep':
+      return open.filter(
+        (p) => p.list === 'project' && !open.some((s) => s.list === 'next' && s.projectId === p.id)
+      ).length;
     case 'waiting':
       return inList('waiting');
     case 'someday':

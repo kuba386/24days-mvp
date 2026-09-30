@@ -11,6 +11,8 @@ export type DayState = {
   value?: number;
   // Карта привычек дня 2 «Атомных привычек»
   items?: ScoreItem[];
+  // Выбранные варианты в дне с подсказками (например, причины прокрастинации)
+  picks?: string[];
 };
 
 export type Progress = Record<string, DayState>;

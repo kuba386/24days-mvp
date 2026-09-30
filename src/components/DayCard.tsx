@@ -5,6 +5,7 @@ import { FOCUSES, type Focus } from '../focus';
 import { blockStyle } from '../blocks';
 import { autoHint, fillHabit, type AutoMetric } from '../courses';
 import { Scorecard, type ScoreItem } from './Scorecard';
+import { Picker, type PickerSpec } from './Picker';
 
 export type Metric = {
   label: string;
@@ -29,6 +30,7 @@ export type Day = {
   template?: string;
   // Вместо свободного текста — интерактивная карта привычек
   scorecard?: boolean;
+  picker?: PickerSpec;
   metric?: Metric;
   review: boolean;
 };
@@ -45,6 +47,7 @@ type Props = {
   onNoteChange: (note: string) => void;
   onValueChange: (value: number | undefined) => void;
   onItemsChange: (items: ScoreItem[]) => void;
+  onPicksChange: (picks: string[]) => void;
   onToggleDone: () => void;
 };
 
@@ -59,6 +62,7 @@ export function DayCard({
   onNoteChange,
   onValueChange,
   onItemsChange,
+  onPicksChange,
   onToggleDone,
 }: Props) {
   const actionLabel = day.action ? 'Действие дня' : FOCUSES.find((f) => f.id === focus)!.actionLabel;
@@ -164,6 +168,10 @@ export function DayCard({
 
       {day.scorecard && (
         <Scorecard items={state.items ?? []} disabled={!!locked} onChange={onItemsChange} />
+      )}
+
+      {day.picker && (
+        <Picker spec={day.picker} picked={state.picks ?? []} disabled={!!locked} onChange={onPicksChange} />
       )}
 
       <div className="action">

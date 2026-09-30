@@ -759,6 +759,12 @@ p {
   color: var(--hint);
 }
 
+.tracker__votes {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--hint);
+}
+
 .tracker__warn {
   margin-top: 10px;
   padding: 10px 12px;
@@ -894,15 +900,74 @@ p {
   margin-top: 8px;
 }
 
-.task--row {
+.task__main {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
 }
 
-.task--row .task-item {
+.task__main .task-item {
   flex: 1;
+  padding: 0;
+}
+
+.task__meta {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--hint);
+}
+
+.task__editor {
+  margin: 8px 0 0 36px;
+}
+
+.task__editor-label {
+  display: block;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--hint);
+}
+
+.task__editor-label:first-child {
+  margin-top: 0;
+}
+
+.tab__alert {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e8962e;
+}
+
+.project__stuck {
+  margin: 6px 0 0 36px;
+  font-size: 13px;
+  color: #e8962e;
+}
+
+.project__steps {
+  margin-left: 36px;
+}
+
+.project__steps .task {
+  padding: 8px 0;
+  border-bottom: none;
+}
+
+.project__add {
+  margin: 8px 0 0 36px;
+}
+
+.now__result {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.review + .btn {
+  margin-top: 12px;
 }
 
 .task__side {
@@ -1143,6 +1208,30 @@ p {
 
 .scorecard__add {
   margin: 10px 0 0;
+}
+
+/* Подсказки по выбранным причинам */
+
+.picker__advice {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.picker__advice li {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--inset);
+  font-size: 14px;
+}
+
+.picker__advice-title {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 2px;
 }
 
 /* Радар блоков */

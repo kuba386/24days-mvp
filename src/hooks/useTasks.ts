@@ -3,6 +3,8 @@ import { ackBotInbox, fetchBotInbox, initData } from '../api';
 import { shiftDateKey, todayKey } from '../dates';
 
 export type TaskList = 'inbox' | 'next' | 'project' | 'waiting' | 'someday';
+export type Context = 'computer' | 'phone' | 'home' | 'errands' | 'anywhere';
+export type Energy = 'low' | 'high';
 
 export type Task = {
   id: string;
@@ -12,6 +14,11 @@ export type Task = {
   doneAt?: string;
   // Закрыто прямо при разборе входящих по правилу двух минут
   quick?: boolean;
+  // Для шагов: где, сколько минут и сколько сил нужно, к какому проекту относится
+  context?: Context;
+  minutes?: number;
+  energy?: Energy;
+  projectId?: string;
 };
 
 // Одна задача — один ключ CloudStorage: значение ограничено 4096 символами, а ключей до 1024
@@ -91,12 +98,12 @@ export function useTasks() {
     }
   }, []);
 
-  const add = useCallback((text: string, list: TaskList = 'inbox', id = newId()) => {
+  const add = useCallback((text: string, list: TaskList = 'inbox', extra: Partial<Task> = {}, id = newId()) => {
     const clean = text.trim().slice(0, TASK_TEXT_MAX);
     if (!clean) return;
     setTasks((prev) => {
       if (prev.length >= TASK_MAX || prev.some((t) => t.id === id)) return prev;
-      const task: Task = { id, text: clean, list, createdAt: new Date().toISOString() };
+      const task: Task = { ...extra, id, text: clean, list, createdAt: new Date().toISOString() };
       save(task);
       return [...prev, task];
     });
@@ -113,9 +120,19 @@ export function useTasks() {
     );
   }, []);
 
+  // У удалённого проекта шаги остаются, но теряют ссылку на него
   const remove = useCallback((id: string) => {
     write(PREFIX + id, null);
-    setTasks((prev) => prev.filter((t) => t.id !== id));
+    setTasks((prev) =>
+      prev
+        .filter((t) => t.id !== id)
+        .map((t) => {
+          if (t.projectId !== id) return t;
+          const next = { ...t, projectId: undefined };
+          save(next);
+          return next;
+        })
+    );
   }, []);
 
   // Сообщения, отправленные боту, лежат в очереди на сервере — забираем их во «Входящие»
@@ -124,7 +141,7 @@ export function useTasks() {
     fetchBotInbox()
       .then((items) => {
         if (items.length === 0) return;
-        items.forEach((item) => add(item.text, 'inbox', `b${item.id}`));
+        items.forEach((item) => add(item.text, 'inbox', {}, `b${item.id}`));
         return ackBotInbox(items.map((i) => i.id));
       })
       .catch(() => {});
