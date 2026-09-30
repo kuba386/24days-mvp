@@ -387,6 +387,19 @@ p {
   border-color: var(--block);
 }
 
+.metric__hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--hint);
+}
+
+.metric__input--auto {
+  display: block;
+  min-width: 64px;
+  background: transparent;
+}
+
 .metric__unit {
   color: var(--hint);
   font-size: 14px;

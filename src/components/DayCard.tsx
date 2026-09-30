@@ -3,13 +3,14 @@ import type { DayState } from '../hooks/useCloudStorage';
 import { useDeferredSave } from '../hooks/useDeferredSave';
 import { FOCUSES, type Focus } from '../focus';
 import { blockStyle } from '../blocks';
-import { fillHabit } from '../courses';
+import { fillHabit, type AutoMetric } from '../courses';
 
 export type Metric = {
   label: string;
   unit: string;
   step: number;
   max: number;
+  auto?: AutoMetric;
 };
 
 export type Day = {
@@ -33,6 +34,8 @@ type Props = {
   day: Day;
   focus: Focus;
   habit: string | null;
+  // Значение автозамера, пока день открыт; после выполнения показываем сохранённое
+  autoValue?: number;
   state: DayState;
   locked: string | null;
   onToggleTask: (index: number) => void;
@@ -45,6 +48,7 @@ export function DayCard({
   day,
   focus,
   habit,
+  autoValue,
   state,
   locked,
   onToggleTask,
@@ -112,7 +116,23 @@ export function DayCard({
         })}
       </ul>
 
-      {day.metric && (
+      {day.metric?.auto && (
+        <div className="metric">
+          <span className="metric__label">
+            <span className="metric__title">Замер дня, считается сам</span>
+            {day.metric.label}
+            <span className="metric__hint">По твоим отметкам «Сделал» над карточкой</span>
+          </span>
+          <span className="metric__row">
+            <output className="metric__input metric__input--auto">
+              {state.done ? state.value ?? 0 : autoValue ?? 0}
+            </output>
+            <span className="metric__unit">{day.metric.unit}</span>
+          </span>
+        </div>
+      )}
+
+      {day.metric && !day.metric.auto && (
         <label className="metric">
           <span className="metric__label">
             <span className="metric__title">Замер дня</span>

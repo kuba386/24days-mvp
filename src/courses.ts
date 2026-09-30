@@ -3,6 +3,7 @@ import habitsDays from './data/habits.json';
 import gtdDays from './data/gtd.json';
 import type { Day } from './components/DayCard';
 import type { Focus } from './focus';
+import { missesInLast, softChain } from './dates';
 
 export type CourseId = 'year' | 'habits' | 'gtd';
 
@@ -83,6 +84,15 @@ export const composeHabit = (what: string, amount: string, when: string) => {
   const text = [what, amount, when].map((p) => p.trim()).filter(Boolean).join(' ');
   return text.charAt(0).toUpperCase() + text.slice(1);
 };
+
+export type AutoMetric = 'repeats' | 'chain' | 'misses7';
+
+// Замеры, которые считаются из ежедневных отметок привычки, а не вводятся руками
+export function autoMetricValue(kind: AutoMetric, habitLog: string[]) {
+  if (kind === 'repeats') return habitLog.length;
+  if (kind === 'chain') return softChain(habitLog);
+  return missesInLast(habitLog, 7);
+}
 
 export const fillHabit = (text: string, habit: string | null) =>
   text.split('{привычка}').join(habit?.trim() || 'твоя привычка');

@@ -12,7 +12,7 @@ import { EMPTY_DAY, useCloudStorage } from './hooks/useCloudStorage';
 import { FOCUSES } from './focus';
 import { currentStreak, pluralDays, todayKey } from './dates';
 import { syncProgress } from './api';
-import { courseById, COURSES } from './courses';
+import { autoMetricValue, courseById, COURSES } from './courses';
 
 export default function App() {
   const {
@@ -96,6 +96,15 @@ export default function App() {
     return null;
   };
   const lockReason = lockReasonFor(currentDayIndex);
+
+  const autoKind = courseHabit ? currentDay.metric?.auto : undefined;
+  const autoValue = autoKind ? autoMetricValue(autoKind, habitLog) : undefined;
+
+  // Автозамер пишем в день, пока он открыт: так он попадёт в итоги и замрёт после выполнения
+  useEffect(() => {
+    if (!loaded || autoValue === undefined || lockReason || currentState.done) return;
+    if (currentState.value !== autoValue) updateDay(course.id, currentDay.day, { value: autoValue });
+  }, [loaded, autoValue, lockReason, currentState.done, currentState.value, course.id, currentDay.day]);
 
   if (!loaded) {
     return (
@@ -225,6 +234,7 @@ export default function App() {
         day={currentDay}
         focus={focus}
         habit={courseHabit}
+        autoValue={autoValue}
         state={currentState}
         locked={lockReason}
         onToggleTask={(i) => {

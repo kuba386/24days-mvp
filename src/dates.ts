@@ -50,3 +50,12 @@ export function softChain(doneDates: Iterable<string>, today = todayKey()) {
 
 export const lastDateKeys = (n: number, today = todayKey()) =>
   Array.from({ length: n }, (_, i) => shiftDateKey(today, i - n + 1));
+
+// Пропуски за последние n полных дней (сегодня не считается), но не раньше первой отметки
+export function missesInLast(doneDates: string[], n: number, today = todayKey()) {
+  if (doneDates.length === 0) return 0;
+  const set = new Set(doneDates);
+  const first = [...doneDates].sort()[0];
+  return lastDateKeys(n, shiftDateKey(today, -1)).filter((key) => key >= first && !set.has(key))
+    .length;
+}
