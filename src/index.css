@@ -575,6 +575,185 @@ p {
   box-shadow: inset 4px 0 0 var(--success);
 }
 
+/* Заметки в итогах блока */
+
+.summary-notes {
+  margin-top: 14px;
+}
+
+.summary-note {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.summary-note:last-child {
+  border-bottom: none;
+}
+
+.summary-note__title {
+  color: var(--hint);
+  font-size: 13px;
+}
+
+.summary-note__text {
+  margin-top: 2px;
+  white-space: pre-wrap;
+}
+
+/* Что дальше после курса */
+
+.finish__label {
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hint);
+}
+
+.finish__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.finish__option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  background: transparent;
+  cursor: pointer;
+}
+
+.finish__title {
+  font-weight: 700;
+  color: var(--link);
+}
+
+.finish__desc {
+  font-size: 13px;
+  color: var(--hint);
+}
+
+.finish__restart {
+  margin-top: 14px;
+  font-size: 14px;
+}
+
+.finish__confirm {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--inset);
+  font-size: 14px;
+}
+
+.finish__confirm-row {
+  display: flex;
+  gap: 8px;
+}
+
+.finish__confirm-row .btn {
+  margin-top: 10px;
+  padding: 11px;
+  font-size: 14px;
+}
+
+.btn--danger {
+  background: #d9534f;
+  color: #fff;
+}
+
+/* Ежедневная отметка привычки */
+
+.tracker__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tracker__label {
+  font-size: 12px;
+  color: var(--hint);
+}
+
+.tracker__habit {
+  font-weight: 700;
+}
+
+.tracker__btn {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: none;
+  background: var(--button);
+  color: var(--button-text);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tracker__btn--on {
+  background: transparent;
+  border: 1.5px solid var(--success);
+  color: var(--success);
+}
+
+.tracker__days {
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+  gap: 4px;
+  margin-top: 14px;
+}
+
+.tracker__day {
+  aspect-ratio: 1 / 1.4;
+  min-width: 0;
+  padding: 0;
+  border-radius: 6px;
+  border: 1.5px solid transparent;
+  background: var(--inset);
+  color: var(--hint);
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 3px;
+}
+
+.tracker__day--on {
+  background: var(--success);
+  color: #fff;
+}
+
+.tracker__day--today {
+  border-color: var(--text);
+}
+
+.tracker__stats {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--hint);
+}
+
+.tracker__warn {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, #e8962e 14%, transparent);
+  font-size: 14px;
+}
+
 /* Тред дня */
 
 .thread__head {

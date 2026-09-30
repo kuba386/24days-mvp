@@ -28,3 +28,25 @@ export function pluralDays(n: number) {
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${n} дня`;
   return `${n} дней`;
 }
+
+// Цепочка по правилу «не пропускать дважды»: один пропуск её не рвёт, два подряд — рвут.
+// Сегодняшний день пропуском не считается, пока он не закончился.
+export function softChain(doneDates: Iterable<string>, today = todayKey()) {
+  const set = new Set(doneDates);
+  let cursor = set.has(today) ? today : shiftDateKey(today, -1);
+  let count = 0;
+  let misses = 0;
+  while (misses < 2) {
+    if (set.has(cursor)) {
+      count++;
+      misses = 0;
+    } else {
+      misses++;
+    }
+    cursor = shiftDateKey(cursor, -1);
+  }
+  return count;
+}
+
+export const lastDateKeys = (n: number, today = todayKey()) =>
+  Array.from({ length: n }, (_, i) => shiftDateKey(today, i - n + 1));

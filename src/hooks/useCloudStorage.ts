@@ -20,6 +20,9 @@ const dayKey = (course: CourseId, day: number) =>
 const COURSE_KEY = 'course';
 const FOCUS_KEY = 'focus';
 const HABIT_KEY = 'habit';
+const HABIT_LOG_KEY = 'habit_log';
+// Ключ CloudStorage держит до 4096 символов: ~300 дат по 13 символов
+const HABIT_LOG_MAX = 300;
 
 const emptyProgress = () =>
   Object.fromEntries(COURSES.map((c) => [c.id, {}])) as Record<CourseId, Progress>;
@@ -33,6 +36,7 @@ export function useCloudStorage() {
   const [course, setCourseState] = useState<CourseId | null>(null);
   const [focus, setFocusState] = useState<Focus | null>(null);
   const [habit, setHabitState] = useState('');
+  const [habitLog, setHabitLog] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [saveError, setSaveError] = useState(false);
   // Telegram-скрипт подставляет объект WebApp даже вне Telegram (и в старых клиентах),
@@ -43,13 +47,19 @@ export function useCloudStorage() {
   useEffect(() => {
     const webApp = getWebApp();
     const dayKeys = COURSES.flatMap((c) => c.days.map((d) => dayKey(c.id, d.day)));
-    const keys = [COURSE_KEY, FOCUS_KEY, HABIT_KEY, ...dayKeys];
+    const keys = [COURSE_KEY, FOCUS_KEY, HABIT_KEY, HABIT_LOG_KEY, ...dayKeys];
 
     const apply = (values: Record<string, string | null | undefined>) => {
       const storedFocus = values[FOCUS_KEY];
       const storedCourse = values[COURSE_KEY];
       setFocusState(isFocus(storedFocus) ? storedFocus : null);
       setHabitState(values[HABIT_KEY] ?? '');
+      try {
+        const log = JSON.parse(values[HABIT_LOG_KEY] || '[]');
+        setHabitLog(Array.isArray(log) ? log.filter((d) => typeof d === 'string') : []);
+      } catch {
+        setHabitLog([]);
+      }
       // Кто начал до появления курсов, уже проходит «Продуктивный год»
       setCourseState(isCourseId(storedCourse) ? storedCourse : isFocus(storedFocus) ? 'year' : null);
 
@@ -108,6 +118,23 @@ export function useCloudStorage() {
     });
   }, []);
 
+  const toggleHabitDate = useCallback((date: string) => {
+    setHabitLog((prev) => {
+      const next = prev.includes(date)
+        ? prev.filter((d) => d !== date)
+        : [...prev, date].sort().slice(-HABIT_LOG_MAX);
+      persist(HABIT_LOG_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  // Пустая строка при загрузке пропускается — это и есть «день не начат»
+  const resetCourse = useCallback((courseId: CourseId) => {
+    const course = COURSES.find((c) => c.id === courseId)!;
+    for (const d of course.days) persist(dayKey(courseId, d.day), '');
+    setProgress((prev) => ({ ...prev, [courseId]: {} }));
+  }, []);
+
   const setCourse = useCallback((next: CourseId) => {
     setCourseState(next);
     persist(COURSE_KEY, next);
@@ -128,8 +155,11 @@ export function useCloudStorage() {
     course,
     focus,
     habit,
+    habitLog,
     loaded,
     updateDay,
+    toggleHabitDate,
+    resetCourse,
     setCourse,
     setFocus,
     setHabit,

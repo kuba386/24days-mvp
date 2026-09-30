@@ -3,6 +3,8 @@ import { DayCard } from './components/DayCard';
 import { FocusPicker } from './components/FocusPicker';
 import { CoursePicker } from './components/CoursePicker';
 import { HabitSetup } from './components/HabitSetup';
+import { HabitTracker } from './components/HabitTracker';
+import { CourseFinish } from './components/CourseFinish';
 import { BlockSummary } from './components/BlockSummary';
 import { JourneyMap } from './components/JourneyMap';
 import { DayThread } from './components/DayThread';
@@ -18,8 +20,11 @@ export default function App() {
     course: courseId,
     focus,
     habit,
+    habitLog,
     loaded,
     updateDay,
+    toggleHabitDate,
+    resetCourse,
     setCourse,
     setFocus,
     setHabit,
@@ -195,14 +200,22 @@ export default function App() {
         )}
       </header>
 
+      {courseHabit && (
+        <HabitTracker habit={courseHabit} log={habitLog} onToggle={toggleHabitDate} />
+      )}
+
       {completedCount === days.length && (
-        <div className="card card--congrats">
-          <div className="card__title">Цикл из 24 дней завершён</div>
-          <p className="card__lead">
-            Ты прошёл весь путь. Загляни в свои заметки за каждый день — там твой готовый план
-            следующего шага.
-          </p>
-        </div>
+        <CourseFinish
+          course={course}
+          completedOf={(id) =>
+            courseById(id).days.filter((d) => progress[id][String(d.day)]?.done).length
+          }
+          onSwitch={setCourse}
+          onRestart={() => {
+            resetCourse(course.id);
+            setCurrentDayIndex(0);
+          }}
+        />
       )}
 
       {currentDay.review && <BlockSummary days={days} reviewDay={currentDay} getDay={getDay} />}
