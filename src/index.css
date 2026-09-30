@@ -721,16 +721,30 @@ p {
 
 /* Ввод привычки */
 
-.habit-form__label {
+.habit-field + .habit-field {
+  margin-top: 18px;
+}
+
+.habit-field__label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.habit-field__hint {
   font-size: 12px;
+  font-weight: 400;
   color: var(--hint);
 }
 
 .habit-form__input {
   display: block;
   width: 100%;
-  margin-top: 4px;
-  padding: 12px 14px;
+  margin-top: 6px;
+  padding: 11px 14px;
   border: 1.5px solid var(--line);
   border-radius: 12px;
   background: var(--inset);
@@ -742,11 +756,58 @@ p {
   border-color: var(--link);
 }
 
-.habit-form__example {
-  display: block;
-  margin-top: 10px;
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
   font-size: 14px;
-  text-align: left;
+  cursor: pointer;
+}
+
+.chip--on {
+  border-color: var(--link);
+  background: color-mix(in srgb, var(--link) 14%, transparent);
+  color: var(--link);
+  font-weight: 600;
+}
+
+.habit-preview {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.habit-preview__text {
+  margin-top: 4px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.habit-preview__text--empty {
+  color: var(--hint);
+  font-weight: 400;
+}
+
+/* Шаблон заметки */
+
+.template-btn {
+  margin-top: 10px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px dashed color-mix(in srgb, var(--block) 60%, transparent);
+  background: transparent;
+  color: var(--block);
+  font-size: 14px;
+  cursor: pointer;
 }
 
 @media (prefers-reduced-motion: reduce) {

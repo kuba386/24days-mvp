@@ -61,10 +61,27 @@ export const courseById = (id: CourseId) => COURSES.find((c) => c.id === id)!;
 
 export const HABIT_MAX = 120;
 
-export const HABIT_EXAMPLES: Record<Focus, string> = {
-  product: 'Час работы над проектом без телефона в 9:00',
-  study: '20 минут английского после ужина',
-  health: '10 минут растяжки после подъёма',
+// Подсказки для конструктора привычки: фраза собирается как «Что + Сколько + Когда»
+export const HABIT_WHAT: Record<Focus, string[]> = {
+  product: ['Работа над проектом', 'План дня', 'Разбор почты', 'Пост о проекте', 'Звонок клиенту'],
+  study: ['Английский', 'Чтение', 'Карточки', 'Конспект', 'Задачи по теме'],
+  health: ['Растяжка', 'Прогулка', 'Зарядка', 'Медитация', 'Отжимания'],
+};
+
+export const HABIT_AMOUNT = ['2 минуты', '10 минут', '20 минут', '30 минут', '1 час'];
+
+export const HABIT_WHEN = [
+  'после подъёма',
+  'после утреннего кофе',
+  'в обед',
+  'после работы',
+  'после ужина',
+  'перед сном',
+];
+
+export const composeHabit = (what: string, amount: string, when: string) => {
+  const text = [what, amount, when].map((p) => p.trim()).filter(Boolean).join(' ');
+  return text.charAt(0).toUpperCase() + text.slice(1);
 };
 
 export const fillHabit = (text: string, habit: string | null) =>

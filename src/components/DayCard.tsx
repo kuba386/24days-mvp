@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import type { DayState } from '../hooks/useCloudStorage';
 import { useDeferredSave } from '../hooks/useDeferredSave';
 import { FOCUSES, type Focus } from '../focus';
@@ -22,6 +23,8 @@ export type Day = {
   // «Атомные привычки»: одно действие с {привычка} и пример под фокус
   action?: string;
   examples?: Record<Focus, string>;
+  // Заготовка заметки для дней, где нужно что-то записать
+  template?: string;
   metric?: Metric;
   review: boolean;
 };
@@ -53,6 +56,20 @@ export function DayCard({
   const actionText = fillHabit(day.action ?? day.actions?.[focus] ?? '', habit);
   const example = day.examples?.[focus];
   const [note, setNote, flushNote] = useDeferredSave(state.note, onNoteChange);
+  const noteRef = useRef<HTMLTextAreaElement>(null);
+
+  const fillTemplate = () => {
+    const text = fillHabit(day.template!, habit);
+    setNote(text);
+    // Курсор на первое «…», чтобы сразу начать писать
+    window.setTimeout(() => {
+      const el = noteRef.current;
+      if (!el) return;
+      const gap = text.indexOf('…');
+      el.focus();
+      if (gap >= 0) el.setSelectionRange(gap, gap + 1);
+    });
+  };
   const [value, setValue, flushValue] = useDeferredSave(
     state.value === undefined ? '' : String(state.value),
     (raw) => onValueChange(raw === '' ? undefined : Number(raw))
@@ -124,11 +141,17 @@ export function DayCard({
         <span className="action__label">{actionLabel}</span>
         <p className="action__text">{actionText}</p>
         {example && <p className="action__example">Пример: {example}</p>}
+        {day.template && !locked && !note.trim() && (
+          <button type="button" className="template-btn" onClick={fillTemplate}>
+            Заполнить по шаблону
+          </button>
+        )}
         <textarea
+          ref={noteRef}
           className="note"
           placeholder="Что получилось? Запиши здесь"
           value={note}
-          rows={3}
+          rows={Math.max(3, note.split('\n').length + 1)}
           disabled={!!locked}
           onChange={(e) => setNote(e.target.value)}
           onBlur={flushNote}
