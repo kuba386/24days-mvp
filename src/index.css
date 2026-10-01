@@ -4,8 +4,8 @@
   --bg: var(--tg-theme-secondary-bg-color, #eef0f4);
   --surface: var(--tg-theme-bg-color, #ffffff);
   --text: var(--tg-theme-text-color, #14171c);
-  --hint: var(--tg-theme-hint-color, #7d838c);
-  --link: var(--tg-theme-link-color, #2f6df6);
+  --hint-raw: var(--tg-theme-hint-color, #7d838c);
+  --link-raw: var(--tg-theme-link-color, #2f6df6);
   --button: var(--tg-theme-button-color, #2f6df6);
   --button-text: var(--tg-theme-button-text-color, #ffffff);
   --line: var(--tg-theme-section-separator-color, rgba(20, 23, 28, 0.1));
@@ -20,16 +20,21 @@
     --bg: var(--tg-theme-secondary-bg-color, #0f1216);
     --surface: var(--tg-theme-bg-color, #191d23);
     --text: var(--tg-theme-text-color, #f1f3f5);
-    --hint: var(--tg-theme-hint-color, #8e959f);
-    --link: var(--tg-theme-link-color, #7aa2ff);
-    --button: var(--tg-theme-button-color, #3b76f6);
+    --hint-raw: var(--tg-theme-hint-color, #8e959f);
+    --link-raw: var(--tg-theme-link-color, #7aa2ff);
+    --button: var(--tg-theme-button-color, #2f6df6);
     --line: var(--tg-theme-section-separator-color, rgba(255, 255, 255, 0.1));
     --inset: rgba(255, 255, 255, 0.06);
   }
 }
 
+/* Вспомогательный текст и ссылки подмешиваем к основному цвету: тусклые цвета темы
+   (и Telegram, и наши запасные) не дотягивают до контраста 4.5 на мелком тексте */
 * {
   box-sizing: border-box;
+  --hint: color-mix(in srgb, var(--hint-raw) 78%, var(--text));
+  --link: color-mix(in srgb, var(--link-raw) 82%, var(--text));
+  --block-text: color-mix(in srgb, var(--block) 58%, var(--text));
 }
 
 html,
@@ -114,7 +119,9 @@ p {
 .link-btn {
   background: none;
   border: none;
-  padding: 0;
+  /* Цель касания выше текста, но без сдвига раскладки */
+  padding: 8px 0;
+  margin: -8px 0;
   color: var(--link);
   cursor: pointer;
 }
@@ -137,7 +144,7 @@ p {
 .map__block {
   font-size: 13px;
   font-weight: 600;
-  color: var(--block);
+  color: var(--block-text);
 }
 
 .map__cells {
@@ -230,7 +237,7 @@ p {
   font-weight: 800;
   line-height: 0.9;
   letter-spacing: -0.04em;
-  color: var(--block);
+  color: var(--block-text);
   min-width: 2ch;
   font-variant-numeric: tabular-nums;
 }
@@ -247,7 +254,7 @@ p {
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 999px;
-  color: var(--block);
+  color: var(--block-text);
   background: color-mix(in srgb, var(--block) 14%, transparent);
 }
 
@@ -545,7 +552,7 @@ p {
 .summary-block__title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--block);
+  color: var(--block-text);
   margin: 8px 0 2px;
 }
 
@@ -565,7 +572,7 @@ p {
 
 .summary-row__day {
   font-weight: 700;
-  color: var(--block);
+  color: var(--block-text);
   font-variant-numeric: tabular-nums;
 }
 
@@ -721,13 +728,13 @@ p {
 
 .tracker__days {
   display: grid;
-  grid-template-columns: repeat(14, 1fr);
-  gap: 4px;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
   margin-top: 14px;
 }
 
 .tracker__day {
-  aspect-ratio: 1 / 1.4;
+  min-height: 40px;
   min-width: 0;
   padding: 0;
   border-radius: 6px;
@@ -843,6 +850,7 @@ p {
 }
 
 .tab {
+  min-height: 38px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -983,7 +991,7 @@ p {
 }
 
 .chip.chip--danger {
-  color: #d9534f;
+  color: color-mix(in srgb, #d9534f 78%, var(--text));
 }
 
 .tasks__done {
@@ -1047,6 +1055,10 @@ p {
   outline: none;
 }
 
+.top3__row:focus-within {
+  border-bottom-color: var(--link);
+}
+
 .top3__input--done {
   color: var(--hint);
   text-decoration: line-through;
@@ -1062,13 +1074,13 @@ p {
 
 .energy__scale {
   display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 4px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
   margin-top: 10px;
 }
 
 .energy__btn {
-  aspect-ratio: 1;
+  min-height: 42px;
   min-width: 0;
   padding: 0;
   border-radius: 8px;
@@ -1232,6 +1244,46 @@ p {
   display: block;
   font-weight: 700;
   margin-bottom: 2px;
+}
+
+/* Отмена удаления */
+
+.undo {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(448px, calc(100% - 32px));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px 10px 16px;
+  border-radius: 14px;
+  background: var(--text);
+  color: var(--surface);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+}
+
+.undo__text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.undo__btn {
+  flex-shrink: 0;
+  min-height: 38px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
 }
 
 /* Радар блоков */
@@ -1467,6 +1519,7 @@ p {
 }
 
 .chip {
+  min-height: 38px;
   padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid var(--line);
@@ -1503,14 +1556,27 @@ p {
 /* Шаблон заметки */
 
 .template-btn {
+  min-height: 38px;
   margin-top: 10px;
   padding: 6px 12px;
   border-radius: 999px;
   border: 1px dashed color-mix(in srgb, var(--block) 60%, transparent);
   background: transparent;
-  color: var(--block);
+  color: var(--block-text);
   font-size: 14px;
   cursor: pointer;
+}
+
+/* На узком телефоне подписи блоков встают над клетками, иначе клетки сжимаются до 20 px */
+@media (max-width: 400px) {
+  .map {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .map__block {
+    margin-top: 4px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

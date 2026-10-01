@@ -135,6 +135,16 @@ export function useTasks() {
     );
   }, []);
 
+  // Отмена удаления: возвращаем задачу как была, со своим id и метками
+  const restore = useCallback((task: Task) => {
+    save(task);
+    setTasks((prev) =>
+      prev.some((t) => t.id === task.id)
+        ? prev
+        : [...prev, task].sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id))
+    );
+  }, []);
+
   // Сообщения, отправленные боту, лежат в очереди на сервере — забираем их во «Входящие»
   useEffect(() => {
     if (!loaded || !initData()) return;
@@ -147,5 +157,5 @@ export function useTasks() {
       .catch(() => {});
   }, [loaded]);
 
-  return { tasks, loaded, add, update, remove };
+  return { tasks, loaded, add, update, remove, restore };
 }

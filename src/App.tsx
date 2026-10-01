@@ -41,7 +41,7 @@ export default function App() {
     setHabit,
     saveError,
   } = useCloudStorage();
-  const { tasks, add: addTask, update: updateTask, remove: removeTask } = useTasks();
+  const { tasks, add: addTask, update: updateTask, remove: removeTask, restore: restoreTask } = useTasks();
   const { top3, top3History, updateTop3, energy, addEnergy } = useDaily();
   const [showTasks, setShowTasks] = useState(false);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
@@ -182,6 +182,7 @@ export default function App() {
         onAdd={addTask}
         onUpdate={updateTask}
         onRemove={removeTask}
+        onRestore={restoreTask}
         onClose={() => setShowTasks(false)}
       />
     );

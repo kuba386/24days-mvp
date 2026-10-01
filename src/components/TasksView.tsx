@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { TASK_TEXT_MAX, type Context, type Energy, type Task, type TaskList } from '../hooks/useTasks';
 import { useReview } from '../hooks/useReview';
 import { initData } from '../api';
@@ -9,8 +9,11 @@ type Props = {
   onAdd: (text: string, list?: TaskList, extra?: Partial<Task>) => void;
   onUpdate: (id: string, patch: Partial<Task>) => void;
   onRemove: (id: string) => void;
+  onRestore: (task: Task) => void;
   onClose: () => void;
 };
+
+const UNDO_MS = 5000;
 
 type Tab = TaskList | 'now' | 'review';
 
@@ -184,7 +187,18 @@ function AddStep({ onAdd }: { onAdd: (text: string) => void }) {
   );
 }
 
-export function TasksView({ tasks, onAdd, onUpdate, onRemove, onClose }: Props) {
+export function TasksView({ tasks, onAdd, onUpdate, onRemove: removeNow, onRestore, onClose }: Props) {
+  const [removed, setRemoved] = useState<Task | null>(null);
+  useEffect(() => {
+    if (!removed) return;
+    const timer = window.setTimeout(() => setRemoved(null), UNDO_MS);
+    return () => window.clearTimeout(timer);
+  }, [removed]);
+  // Удаление сразу, но с возможностью вернуть: кнопки разбора стоят плотно, промахнуться легко
+  const onRemove = (id: string) => {
+    setRemoved(tasks.find((t) => t.id === id) ?? null);
+    removeNow(id);
+  };
   const [text, setText] = useState('');
   const [tab, setTab] = useState<Tab>('inbox');
   const [where, setWhere] = useState<Context | undefined>();
@@ -472,6 +486,22 @@ export function TasksView({ tasks, onAdd, onUpdate, onRemove, onClose }: Props) 
       </section>
 
       {doneToday > 0 && <p className="tasks__done">Сегодня закрыто: {doneToday}</p>}
+
+      {removed && (
+        <div className="undo" role="status">
+          <span className="undo__text">Удалено: {removed.text}</span>
+          <button
+            type="button"
+            className="undo__btn"
+            onClick={() => {
+              onRestore(removed);
+              setRemoved(null);
+            }}
+          >
+            Вернуть
+          </button>
+        </div>
+      )}
     </div>
   );
 }

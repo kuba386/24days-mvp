@@ -185,6 +185,7 @@ export function DayCard({
         )}
         <textarea
           ref={noteRef}
+          aria-label="Заметка дня"
           className="note"
           placeholder="Что получилось? Запиши здесь"
           value={note}

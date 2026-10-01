@@ -76,7 +76,7 @@ export function BlockRadar({ days, getDay, reachedBlock }: Props) {
               textAnchor={Math.abs(x - CX) < 2 ? 'middle' : x > CX ? 'start' : 'end'}
               dominantBaseline="middle"
               className="radar__label"
-              fill={BLOCK_COLORS[block] ?? 'currentColor'}
+              style={{ fill: `color-mix(in srgb, ${BLOCK_COLORS[block] ?? 'currentColor'} 58%, var(--text))` }}
             >
               <tspan x={x} dy="-0.5em">{block}</tspan>
               <tspan x={x} dy="1.2em" className="radar__pct">

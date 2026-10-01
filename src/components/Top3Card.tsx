@@ -73,6 +73,7 @@ export function Top3Card({ items, history, onUpdate }: Props) {
               className={`top3__input ${item.done ? 'top3__input--done' : ''}`}
               value={texts[i]}
               maxLength={120}
+              aria-label={`Главное дело ${i + 1}`}
               placeholder={i === 0 ? 'Самое важное дело дня' : `Главное дело ${i + 1}`}
               onChange={(e) => change(i, e.target.value)}
               onBlur={() => flush(i)}
