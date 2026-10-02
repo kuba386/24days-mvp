@@ -115,7 +115,7 @@ export function StatsView({ progress, habit, habitLog, top3History, energy, task
                 const future = key > today;
                 const cls = future ? 'heat__cell--future' : done.has(key) ? 'heat__cell--on' : key === today ? 'heat__cell--today' : '';
                 return (
-                  <span key={key} className={`heat__cell ${cls}`} title={key}>
+                  <span key={key} className={`heat__cell ${cls}`} title={future ? undefined : key} aria-hidden={future || undefined}>
                     {dayNum(key)}
                   </span>
                 );

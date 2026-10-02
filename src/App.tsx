@@ -7,6 +7,8 @@ import { HabitTracker } from './components/HabitTracker';
 import { CourseFinish } from './components/CourseFinish';
 import { TasksView } from './components/TasksView';
 import { StatsView } from './components/StatsView';
+import { HabitsView } from './components/HabitsView';
+import { useHabits } from './hooks/useHabits';
 import { useTasks } from './hooks/useTasks';
 import { useDaily } from './hooks/useDaily';
 import { Top3Card } from './components/Top3Card';
@@ -46,6 +48,8 @@ export default function App() {
   const { top3, top3History, updateTop3, energy, addEnergy } = useDaily();
   const [showTasks, setShowTasks] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [showHabits, setShowHabits] = useState(false);
+  const myHabits = useHabits();
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
   const [pickingCourse, setPickingCourse] = useState(false);
   const [pickingFocus, setPickingFocus] = useState(false);
@@ -190,6 +194,20 @@ export default function App() {
     );
   }
 
+  if (showHabits) {
+    return (
+      <HabitsView
+        habits={myHabits.habits}
+        onAdd={myHabits.add}
+        onToggle={myHabits.toggle}
+        onRename={myHabits.rename}
+        onRemove={myHabits.remove}
+        onRestore={myHabits.restore}
+        onClose={() => setShowHabits(false)}
+      />
+    );
+  }
+
   if (showStats) {
     return (
       <StatsView
@@ -272,6 +290,18 @@ export default function App() {
           <EnergyCard entries={energy} onRate={addEnergy} />
         </>
       )}
+
+      <button type="button" className="card tasks-entry" onClick={() => setShowHabits(true)}>
+        <span>
+          <span className="tasks-entry__title">Мои привычки</span>
+          <span className="tasks-entry__desc">
+            {myHabits.habits.length === 0
+              ? 'Добавь привычки и отмечай их каждый день'
+              : `Сегодня: ${myHabits.habits.filter((h) => h.log.includes(todayKey())).length} из ${myHabits.habits.length}`}
+          </span>
+        </span>
+        <span className="tasks-entry__go">Открыть</span>
+      </button>
 
       {(course.id === 'gtd' || openTasks.length > 0) && (
         <button type="button" className="card tasks-entry" onClick={() => setShowTasks(true)}>

@@ -11,6 +11,7 @@
   --line: var(--tg-theme-section-separator-color, rgba(20, 23, 28, 0.1));
   --inset: rgba(20, 23, 28, 0.045);
   --success: #2e9e6b;
+  --success-fill: #23805a;
   --block: var(--link);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
 }
@@ -35,6 +36,7 @@
   --hint: color-mix(in srgb, var(--hint-raw) 78%, var(--text));
   --link: color-mix(in srgb, var(--link-raw) 82%, var(--text));
   --block-text: color-mix(in srgb, var(--block) 58%, var(--text));
+  --success-text: color-mix(in srgb, var(--success) 62%, var(--text));
 }
 
 html,
@@ -492,7 +494,7 @@ p {
 .btn--undone {
   background: transparent;
   border: 1.5px solid var(--success);
-  color: var(--success);
+  color: var(--success-text);
 }
 
 .lock-notice {
@@ -723,7 +725,7 @@ p {
 .tracker__btn--on {
   background: transparent;
   border: 1.5px solid var(--success);
-  color: var(--success);
+  color: var(--success-text);
 }
 
 .tracker__days {
@@ -750,7 +752,7 @@ p {
 }
 
 .tracker__day--on {
-  background: var(--success);
+  background: var(--success-fill);
   color: #fff;
 }
 
@@ -1017,7 +1019,7 @@ p {
 .top3__score {
   font-size: 13px;
   font-weight: 600;
-  color: var(--success);
+  color: var(--success-text);
 }
 
 .top3__list {
@@ -1120,7 +1122,7 @@ p {
 }
 
 .energy__bar--best {
-  background: var(--success);
+  background: var(--success-fill);
 }
 
 .energy__hour {
@@ -1197,7 +1199,7 @@ p {
 
 .mark--on.mark--plus {
   border-color: var(--success);
-  background: var(--success);
+  background: var(--success-fill);
   color: #fff;
 }
 
@@ -1654,7 +1656,7 @@ p {
 }
 
 .heat__cell--on {
-  background: var(--success);
+  background: var(--success-fill);
   color: #fff;
   font-weight: 600;
 }
@@ -1760,4 +1762,140 @@ p {
 .top3-chart__day {
   font-size: 10px;
   color: var(--hint);
+}
+
+/* Мои привычки */
+
+.habits__today {
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--success-text);
+}
+
+.habits + .habits {
+  margin-top: 12px;
+}
+
+.habits__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.hb {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.hb:first-child {
+  padding-top: 0;
+}
+
+.hb:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.hb__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hb__check {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 2px solid var(--line);
+  background: transparent;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.hb__check--on {
+  border-color: var(--success);
+  background: var(--success-fill);
+}
+
+.hb__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.hb__name {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  font-weight: 700;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+  cursor: text;
+}
+
+.hb__rename {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1.5px solid var(--link);
+  border-radius: 8px;
+  background: var(--inset);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.hb__rename:focus {
+  outline: none;
+}
+
+.hb__meta {
+  font-size: 12px;
+  color: var(--hint);
+}
+
+.hb__days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.hb__day {
+  min-height: 44px;
+  min-width: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  background: var(--inset);
+  color: var(--hint);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.hb__num {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.hb__day--on {
+  background: var(--success-fill);
+  color: #fff;
+}
+
+.hb__day--today {
+  border-color: var(--text);
 }
