@@ -6,6 +6,13 @@ declare global {
     Telegram?: {
       WebApp: {
         ready: () => void;
+        isVersionAtLeast?: (version: string) => boolean;
+        BackButton?: {
+          show: () => void;
+          hide: () => void;
+          onClick: (cb: () => void) => void;
+          offClick: (cb: () => void) => void;
+        };
         expand: () => void;
         colorScheme: 'light' | 'dark';
         initData: string;

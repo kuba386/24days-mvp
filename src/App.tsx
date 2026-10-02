@@ -9,6 +9,7 @@ import { TasksView } from './components/TasksView';
 import { StatsView } from './components/StatsView';
 import { HabitsView } from './components/HabitsView';
 import { useHabits } from './hooks/useHabits';
+import { useBackNav } from './hooks/useBackNav';
 import { useTasks } from './hooks/useTasks';
 import { useDaily } from './hooks/useDaily';
 import { Top3Card } from './components/Top3Card';
@@ -54,6 +55,15 @@ export default function App() {
   const [pickingCourse, setPickingCourse] = useState(false);
   const [pickingFocus, setPickingFocus] = useState(false);
   const [editingHabit, setEditingHabit] = useState(false);
+  const closeScreens = () => {
+    setShowTasks(false);
+    setShowStats(false);
+    setShowHabits(false);
+    setPickingCourse(false);
+    setPickingFocus(false);
+    setEditingHabit(false);
+  };
+  useBackNav(showTasks || showStats || showHabits || pickingCourse || pickingFocus || editingHabit, closeScreens);
   const course = courseById(courseId ?? COURSES[0].id);
   const days = course.days;
   const courseHabit = course.needsHabit ? habit || null : null;
