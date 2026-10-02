@@ -59,3 +59,30 @@ export function missesInLast(doneDates: string[], n: number, today = todayKey())
   return lastDateKeys(n, shiftDateKey(today, -1)).filter((key) => key >= first && !set.has(key))
     .length;
 }
+
+// Лучшая цепочка за всю историю по тому же правилу «не пропускать дважды»
+export function bestSoftChain(doneDates: Iterable<string>, today = todayKey()) {
+  const sorted = [...new Set(doneDates)].sort();
+  if (sorted.length === 0) return 0;
+  const set = new Set(sorted);
+  let cursor = sorted[0];
+  let count = 0;
+  let misses = 0;
+  let best = 0;
+  while (cursor <= today) {
+    if (set.has(cursor)) {
+      count++;
+      misses = 0;
+    } else if (++misses >= 2) {
+      count = 0;
+    }
+    best = Math.max(best, count);
+    cursor = shiftDateKey(cursor, 1);
+  }
+  return best;
+}
+
+export function weekdayOf(key: string) {
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y, m - 1, d).getDay();
+}

@@ -6,6 +6,7 @@ import { HabitSetup } from './components/HabitSetup';
 import { HabitTracker } from './components/HabitTracker';
 import { CourseFinish } from './components/CourseFinish';
 import { TasksView } from './components/TasksView';
+import { StatsView } from './components/StatsView';
 import { useTasks } from './hooks/useTasks';
 import { useDaily } from './hooks/useDaily';
 import { Top3Card } from './components/Top3Card';
@@ -44,6 +45,7 @@ export default function App() {
   const { tasks, add: addTask, update: updateTask, remove: removeTask, restore: restoreTask } = useTasks();
   const { top3, top3History, updateTop3, energy, addEnergy } = useDaily();
   const [showTasks, setShowTasks] = useState(false);
+  const [showStats, setShowStats] = useState(false);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
   const [pickingCourse, setPickingCourse] = useState(false);
   const [pickingFocus, setPickingFocus] = useState(false);
@@ -188,6 +190,20 @@ export default function App() {
     );
   }
 
+  if (showStats) {
+    return (
+      <StatsView
+        progress={progress}
+        habit={habit || null}
+        habitLog={habitLog}
+        top3History={top3History}
+        energy={energy}
+        tasks={tasks}
+        onClose={() => setShowStats(false)}
+      />
+    );
+  }
+
   const focusTitle = FOCUSES.find((f) => f.id === focus)!.title;
   const openTasks = tasks.filter((t) => !t.doneAt);
   const inboxCount = openTasks.filter((t) => t.list === 'inbox').length;
@@ -234,6 +250,10 @@ export default function App() {
             {completedCount === 0
               ? 'Пока ни одного дня'
               : `${completedCount} из ${days.length} позади`}
+            {' · '}
+            <button type="button" className="link-btn" onClick={() => setShowStats(true)}>
+              статистика
+            </button>
           </span>
           <span className={streak > 0 ? 'header__streak' : undefined}>
             {streak > 0 ? `Серия: ${pluralDays(streak)}` : 'Серии пока нет'}
