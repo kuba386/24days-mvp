@@ -26,6 +26,7 @@ export function CoursePicker({ current, onPick }: Props) {
             <span className="focus-option__title">{c.title}</span>
             <span className="focus-option__desc">{c.description}</span>
             <span className="focus-option__book">{c.book}</span>
+            {c.note && <span className="focus-option__note">{c.note}</span>}
           </button>
         ))}
       </div>

@@ -1,14 +1,16 @@
 import yearDays from './data/days.json';
 import habitsDays from './data/habits.json';
 import gtdDays from './data/gtd.json';
+import moneyDays from './data/money.json';
 import type { Day } from './components/DayCard';
 import type { Focus } from './focus';
 import { missesInLast, softChain, todayKey } from './dates';
 import type { Task } from './hooks/useTasks';
 import type { EnergyEntry, Top3Item } from './hooks/useDaily';
 import type { ScoreItem } from './components/Scorecard';
+import { MONEY_METRICS, moneyMetricValue, type ExpenseLog, type MoneyMetric } from './expenses';
 
-export type CourseId = 'year' | 'habits' | 'gtd';
+export type CourseId = 'year' | 'habits' | 'gtd' | 'money';
 
 export type Course = {
   id: CourseId;
@@ -19,6 +21,10 @@ export type Course = {
   // Префикс ключей в CloudStorage; у первого курса пустой, чтобы не потерять старый прогресс
   keyPrefix: string;
   needsHabit: boolean;
+  // Нужен ли выбор фокуса (продукт, учёба, здоровье) для примеров в заданиях
+  needsFocus: boolean;
+  // Оговорка, которая показывается на экране выбора курса
+  note?: string;
   days: Day[];
 };
 
@@ -32,6 +38,7 @@ export const COURSES: Course[] = [
       'На что направим эти дни? Задачи по времени, энергии и вниманию у всех одинаковые, а ежедневное действие — под твою цель.',
     keyPrefix: '',
     needsHabit: false,
+    needsFocus: true,
     days: yearDays as Day[],
   },
   {
@@ -43,6 +50,7 @@ export const COURSES: Course[] = [
       'В какой сфере будет твоя привычка? Это нужно для примеров-подсказок, саму привычку сформулируешь дальше.',
     keyPrefix: 'habits_',
     needsHabit: true,
+    needsFocus: true,
     days: habitsDays as Day[],
   },
   {
@@ -54,7 +62,20 @@ export const COURSES: Course[] = [
       'Где у тебя больше всего незакрытых дел? Шаги у всех одинаковые, а примеры будут под твою сферу.',
     keyPrefix: 'gtd_',
     needsHabit: false,
+    needsFocus: true,
     days: gtdDays as Day[],
+  },
+  {
+    id: 'money',
+    title: 'Деньги или жизнь',
+    book: 'По книге Вики Робин и Джо Домингеса «Деньги или жизнь»',
+    description: 'Узнать настоящую цену своего часа, записать все траты и тратить на то, что действительно важно',
+    focusLead: '',
+    keyPrefix: 'money_',
+    needsHabit: false,
+    needsFocus: false,
+    note: 'Курс про привычки обращения с деньгами. Советов, куда вкладывать, в нём нет.',
+    days: moneyDays as Day[],
   },
 ];
 
@@ -94,11 +115,15 @@ const DAILY_METRICS = ['top3Done', 'energyAfternoon', 'energyToday', 'scoreMinus
 export type AutoMetric =
   | (typeof HABIT_METRICS)[number]
   | (typeof TASK_METRICS)[number]
-  | (typeof DAILY_METRICS)[number];
+  | (typeof DAILY_METRICS)[number]
+  | MoneyMetric;
+
+const isMoneyMetric = (kind: AutoMetric): kind is MoneyMetric => (MONEY_METRICS as readonly string[]).includes(kind);
 
 export const isHabitMetric = (kind: AutoMetric) => (HABIT_METRICS as readonly string[]).includes(kind);
 
-export const AUTO_HINTS: Record<'habit' | 'task' | 'top3' | 'energy' | 'score', string> = {
+export const AUTO_HINTS: Record<'habit' | 'task' | 'top3' | 'energy' | 'score' | 'money', string> = {
+  money: 'По твоим записям в «Мои траты»',
   habit: 'По твоим отметкам «Сделал» над карточкой',
   task: 'По твоим спискам в «Мои дела»',
   top3: 'По «Трём главным на сегодня» над карточкой',
@@ -109,7 +134,9 @@ export const AUTO_HINTS: Record<'habit' | 'task' | 'top3' | 'energy' | 'score', 
 export const autoHint = (kind: AutoMetric) =>
   isHabitMetric(kind)
     ? AUTO_HINTS.habit
-    : kind === 'top3Done'
+    : isMoneyMetric(kind)
+      ? AUTO_HINTS.money
+      : kind === 'top3Done'
       ? AUTO_HINTS.top3
       : kind === 'energyAfternoon' || kind === 'energyToday'
         ? AUTO_HINTS.energy
@@ -130,8 +157,11 @@ export function autoMetricValue(
     top3?: Top3Item[];
     energy?: EnergyEntry[];
     dayItems?: ScoreItem[];
+    expenses?: ExpenseLog;
+    hourRate?: number;
   }
 ): number | undefined {
+  if (isMoneyMetric(kind)) return moneyMetricValue(kind, source.expenses ?? {}, source.hourRate);
   if (kind === 'scoreMinus') {
     const items = source.dayItems ?? [];
     return items.length ? items.filter((i) => i.mark === '-').length : undefined;

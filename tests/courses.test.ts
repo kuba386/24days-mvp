@@ -52,6 +52,13 @@ describe('composeHabit и fillHabit', () => {
 describe('autoMetricValue', () => {
   const empty = { habitLog: null, tasks: [] as Task[] };
 
+  it('замеры денег берутся из записей трат, а без записей пусты', () => {
+    const expenses = { '2026-10-03': [{ id: '1', a: 750, c: 'Кафе' }] };
+    expect(autoMetricValue('expCountToday', { ...empty, expenses })).toBe(1);
+    expect(autoMetricValue('lifeHoursMax', { ...empty, expenses, hourRate: 375 })).toBe(2);
+    expect(autoMetricValue('expCountToday', empty)).toBeUndefined();
+  });
+
   it('замеры привычки: повторы, цепочка, пропуски', () => {
     const habitLog = ['2026-09-30', '2026-10-01', '2026-10-02'];
     expect(autoMetricValue('repeats', { ...empty, habitLog })).toBe(3);

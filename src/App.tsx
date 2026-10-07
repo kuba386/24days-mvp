@@ -9,6 +9,9 @@ import { TasksView } from './components/TasksView';
 import { StatsView } from './components/StatsView';
 import { HabitsView } from './components/HabitsView';
 import { useHabits } from './hooks/useHabits';
+import { ExpensesView } from './components/ExpensesView';
+import { useExpenses } from './hooks/useExpenses';
+import { formatAmount, hasAnyRecords, spentOn } from './expenses';
 import { useBackNav } from './hooks/useBackNav';
 import { useTasks } from './hooks/useTasks';
 import { useDaily } from './hooks/useDaily';
@@ -50,6 +53,8 @@ export default function App() {
   const [showTasks, setShowTasks] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showHabits, setShowHabits] = useState(false);
+  const [showExpenses, setShowExpenses] = useState(false);
+  const money = useExpenses();
   const myHabits = useHabits();
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
   const [pickingCourse, setPickingCourse] = useState(false);
@@ -59,11 +64,12 @@ export default function App() {
     setShowTasks(false);
     setShowStats(false);
     setShowHabits(false);
+    setShowExpenses(false);
     setPickingCourse(false);
     setPickingFocus(false);
     setEditingHabit(false);
   };
-  useBackNav(showTasks || showStats || showHabits || pickingCourse || pickingFocus || editingHabit, closeScreens);
+  useBackNav(showTasks || showStats || showHabits || showExpenses || pickingCourse || pickingFocus || editingHabit, closeScreens);
   const course = courseById(courseId ?? COURSES[0].id);
   const days = course.days;
   const courseHabit = course.needsHabit ? habit || null : null;
@@ -78,7 +84,7 @@ export default function App() {
 
   // Сообщаем боту курс, текущий день и фокус — для утреннего напоминания по делу
   useEffect(() => {
-    if (!loaded || !courseId || !focus) return;
+    if (!loaded || !courseId || (course.needsFocus && !focus)) return;
     const firstUnfinished = days.find((d) => !getDay(d.day).done);
     const doneDates = days.flatMap((d) => getDay(d.day).doneAt ?? []).sort();
     const timer = window.setTimeout(
@@ -130,6 +136,8 @@ export default function App() {
   const autoKind = currentDay.metric?.auto;
   const autoValue = autoKind
     ? autoMetricValue(autoKind, {
+        expenses: money.log,
+        hourRate: progress.money['2']?.value,
         habitLog: courseHabit ? habitLog : null,
         tasks,
         top3,
@@ -164,7 +172,7 @@ export default function App() {
     );
   }
 
-  if (!focus || pickingFocus) {
+  if (course.needsFocus && (!focus || pickingFocus)) {
     return (
       <FocusPicker
         current={focus}
@@ -181,7 +189,7 @@ export default function App() {
     return (
       <HabitSetup
         current={habit}
-        focus={focus}
+        focus={focus ?? 'product'}
         onSave={(h) => {
           setHabit(h);
           setEditingHabit(false);
@@ -200,6 +208,22 @@ export default function App() {
         onRemove={removeTask}
         onRestore={restoreTask}
         onClose={() => setShowTasks(false)}
+      />
+    );
+  }
+
+  if (showExpenses) {
+    return (
+      <ExpensesView
+        log={money.log}
+        categories={money.categories}
+        hourRate={progress.money['2']?.value}
+        onAdd={money.add}
+        onUpdate={money.update}
+        onRemove={money.remove}
+        onRestore={money.restore}
+        onAddCategory={money.addCategory}
+        onClose={() => setShowExpenses(false)}
       />
     );
   }
@@ -232,7 +256,7 @@ export default function App() {
     );
   }
 
-  const focusTitle = FOCUSES.find((f) => f.id === focus)!.title;
+  const focusTitle = FOCUSES.find((f) => f.id === focus)?.title ?? '';
   const openTasks = tasks.filter((t) => !t.doneAt);
   const inboxCount = openTasks.filter((t) => t.list === 'inbox').length;
 
@@ -249,12 +273,14 @@ export default function App() {
           </span>
         </div>
         <div className="header__meta">
-          <span>
-            Фокус: {focusTitle.toLowerCase()}{' '}
-            <button className="link-btn" onClick={() => setPickingFocus(true)}>
-              изменить
-            </button>
-          </span>
+          {course.needsFocus && (
+            <span>
+              Фокус: {focusTitle.toLowerCase()}{' '}
+              <button className="link-btn" onClick={() => setPickingFocus(true)}>
+                изменить
+              </button>
+            </span>
+          )}
           {courseHabit && (
             <span>
               Привычка: {courseHabit}{' '}
@@ -299,6 +325,20 @@ export default function App() {
           <Top3Card items={top3} history={top3History} onUpdate={updateTop3} />
           <EnergyCard entries={energy} onRate={addEnergy} />
         </>
+      )}
+
+      {(course.id === 'money' || hasAnyRecords(money.log)) && (
+        <button type="button" className="card tasks-entry" onClick={() => setShowExpenses(true)}>
+          <span>
+            <span className="tasks-entry__title">Мои траты</span>
+            <span className="tasks-entry__desc">
+              {hasAnyRecords(money.log)
+                ? `Сегодня потрачено: ${formatAmount(spentOn(money.log, todayKey()))}`
+                : 'Записывай траты и доходы, оценивай, радуют ли они'}
+            </span>
+          </span>
+          <span className="tasks-entry__go">Открыть</span>
+        </button>
       )}
 
       <button type="button" className="card tasks-entry" onClick={() => setShowHabits(true)}>
@@ -355,7 +395,7 @@ export default function App() {
       <DayCard
         key={`${course.id}-${currentDay.day}`}
         day={currentDay}
-        focus={focus}
+        focus={focus ?? 'product'}
         habit={courseHabit}
         autoValue={autoValue}
         state={currentState}

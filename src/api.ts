@@ -31,7 +31,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 export function syncProgress(payload: {
   course: CourseId;
   day: number;
-  focus: Focus;
+  focus: Focus | null;
   habit: string | null;
   lastDoneAt: string | null;
 }) {
@@ -53,7 +53,7 @@ export const sharePost = (post: {
   day: number;
   note: string;
   value?: number;
-  focus: Focus;
+  focus?: Focus;
   habit?: string;
 }) => request<{ ok: true }>('/api/thread', { method: 'POST', body: JSON.stringify(post) });
 

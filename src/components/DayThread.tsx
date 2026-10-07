@@ -8,7 +8,7 @@ import { fetchThread, initData, sharePost, toggleReaction, unsharePost, type Pos
 type Props = {
   course: CourseId;
   day: Day;
-  focus: Focus;
+  focus: Focus | null;
   habit: string | null;
   state: DayState;
 };
@@ -47,7 +47,7 @@ export function DayThread({ course, day, focus, habit, state }: Props) {
         day: day.day,
         note: state.note.trim(),
         value: state.value,
-        focus,
+        focus: focus ?? undefined,
         habit: habit || undefined,
       });
       await load();

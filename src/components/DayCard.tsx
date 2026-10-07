@@ -26,6 +26,8 @@ export type Day = {
   // «Атомные привычки»: одно действие с {привычка} и пример под фокус
   action?: string;
   examples?: Record<Focus, string>;
+  // Один пример для курсов без выбора фокуса
+  example?: string;
   // Заготовка заметки для дней, где нужно что-то записать
   template?: string;
   // Вместо свободного текста — интерактивная карта привычек
@@ -67,7 +69,7 @@ export function DayCard({
 }: Props) {
   const actionLabel = day.action ? 'Действие дня' : FOCUSES.find((f) => f.id === focus)!.actionLabel;
   const actionText = fillHabit(day.action ?? day.actions?.[focus] ?? '', habit);
-  const example = day.examples?.[focus];
+  const example = day.examples?.[focus] ?? day.example;
   const [note, setNote, flushNote] = useDeferredSave(state.note, onNoteChange);
   const noteRef = useRef<HTMLTextAreaElement>(null);
 
