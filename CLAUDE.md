@@ -6,7 +6,7 @@ Telegram Mini App «24 DAYS»: 24-дневные курсы по книгам. �
 
 - `npm run dev`: Vite dev server на порту 5173 (конфиг `24days-dev` в `.claude/launch.json`)
 - `npm run build`: `tsc -b && vite build`, это же проверка типов (фронт и `api/`)
-- Тестов и линтера нет
+- `npm test`: vitest, тесты в `tests/` на чистую логику — даты и цепочки, автозамеры и структура курсов, проверка подписи Telegram. Менял `src/dates.ts`, `src/courses.ts`, JSON курсов или `api/_lib/telegram.ts` — запусти. Линтера нет
 
 ## Архитектура
 
@@ -30,6 +30,11 @@ Telegram Mini App «24 DAYS»: 24-дневные курсы по книгам. �
   - `api/remind.ts`: ежедневный cron (`vercel.json`, `0 4 * * *`), `Bearer CRON_SECRET`
   - Переменные окружения описаны в `.env.example`
 - Тред дня (`DayThread.tsx`) скрыт вне Telegram, когда `initData` пустой.
+
+## Настройки Claude Code в репозитории
+
+- `.claude/settings.json`: разрешены тесты, сборка, dev-сервер и чтение git; чтение `.env*` и `.vercel/` запрещено; `git push` всегда со спросом. Хук `PostToolUse` (`.claude/hooks/test-on-change.mjs`) после правки `src/dates.ts`, `src/courses.ts`, `src/data/*.json`, `api/_lib/telegram.ts` или тестов запускает vitest и возвращает упавшие проверки.
+- Команды проекта: `/ship` (тесты, сборка, коммит, пуш, ожидание деплоя), `/ux-audit` (контраст, касания, подписи на 320 px в обеих темах), `/new-course` (контент и регистрация нового курса).
 
 ## Деплой
 
